@@ -26,7 +26,6 @@ let queueVanilla = {
     history: []
 };
 
-// --- ĐĂNG KÝ LỆNH ĐÃ ĐƯỢC LÀM GỌN VÀ CHUẨN XÁC ---
 const commands = [
     new SlashCommandBuilder().setName('xacminh').setDescription('Gửi bảng xác minh role').setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder().setName('taorolexacminh').setDescription('Tự động tạo Role xác minh').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
@@ -78,9 +77,14 @@ client.on(Events.InteractionCreate, async interaction => {
         const { commandName } = interaction;
 
         if (commandName === 'xacminh') {
-            const embed = new EmbedBuilder().setColor('#DC143C').setTitle('📝 Evaluation Testing Waitlist').setDescription('Nhấn để xác minh');
+            const embed = new EmbedBuilder()
+                .setColor('#DC143C')
+                .setTitle('📝 Evaluation Testing Waitlist')
+                .setDescription('Upon applying, you will be added to a waitlist channel.\nHere you will be pinged when a tester of your region is available.\nIf you are HT3 or higher, a high ticket will be created.\n\n• Region should be the region of the server you wish to test on\n• Username should be the name of the account you will be testing on\n\n🛑 **Failure to provide authentic information will result in a denied test.**');
+            
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('btn_open_verify_modal').setLabel('Verify Account').setStyle(ButtonStyle.Primary)
+                new ButtonBuilder().setCustomId('btn_open_verify_modal').setLabel('Verify Account').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('btn_enter_waitlist').setLabel('Enter Waitlist').setStyle(ButtonStyle.Secondary)
             );
             await interaction.reply({ embeds: [embed], components: [row] });
         }
@@ -121,10 +125,39 @@ client.on(Events.InteractionCreate, async interaction => {
 
     if (interaction.isButton()) {
         if (interaction.customId === 'btn_open_verify_modal') {
-            const modal = new ModalBuilder().setCustomId('verify_modal').setTitle('Verify Account');
-            const ignInput = new TextInputBuilder().setCustomId('ign').setLabel('IGN').setStyle(TextInputStyle.Short).setRequired(true);
-            modal.addComponents(new ActionRowBuilder().addComponents(ignInput));
+            const modal = new ModalBuilder().setCustomId('verify_modal').setTitle('Verify Account & Server');
+            
+            const ignInput = new TextInputBuilder()
+                .setCustomId('ign')
+                .setLabel('In-game name (IGN)')
+                .setPlaceholder('Nhập tên Minecraft của bạn')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+
+            const serverInput = new TextInputBuilder()
+                .setCustomId('server_region')
+                .setLabel('Server muốn test')
+                .setPlaceholder('Ví dụ: NA, ASIA, EU...')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+
+            const typeInput = new TextInputBuilder()
+                .setCustomId('account_type')
+                .setLabel('Loại tài khoản (Premium / Cracked)')
+                .setPlaceholder('Nhập Premium hoặc Cracked')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(ignInput),
+                new ActionRowBuilder().addComponents(serverInput),
+                new ActionRowBuilder().addComponents(typeInput)
+            );
+
             await interaction.showModal(modal);
+        }
+        else if (interaction.customId === 'btn_enter_waitlist') {
+            await interaction.reply({ content: '✅ Bạn đã được thêm vào hàng đợi chờ test!', ephemeral: true });
         }
         else if (interaction.customId === 'btn_join_queue') {
             if (!queueVanilla.players.includes(interaction.user.id)) {
@@ -140,10 +173,16 @@ client.on(Events.InteractionCreate, async interaction => {
 
     if (interaction.isModalSubmit()) {
         if (interaction.customId === 'verify_modal') {
-            await interaction.reply({ content: '✅ Xác minh thành công!', ephemeral: true });
+            const ign = interaction.fields.getTextInputValue('ign');
+            const serverRegion = interaction.fields.getTextInputValue('server_region');
+            const accountType = interaction.fields.getTextInputValue('account_type');
+
+            await interaction.reply({ 
+                content: `✅ Xác minh thành công!\n- **IGN:** ${ign}\n- **Server:** ${serverRegion}\n- **Loại tài khoản:** ${accountType}`, 
+                ephemeral: true 
+            });
         }
     }
 });
 
 client.login(TOKEN);
-        
