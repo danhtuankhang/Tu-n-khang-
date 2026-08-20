@@ -90,35 +90,40 @@ client.on(Events.InteractionCreate, async interaction => {
     try {
         if (interaction.isChatInputCommand()) {
             const { commandName } = interaction;
+            
             if (commandName === 'xacminh') {
-                await interaction.deferReply();
+                await interaction.deferReply({ ephemeral: true });
                 const embed = new EmbedBuilder().setColor('#DC143C').setTitle('📝 Evaluation Testing Waitlist').setDescription('Nhấn nút bên dưới để xác minh tài khoản.');
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('btn_open_verify_modal').setLabel('Verify Account').setStyle(ButtonStyle.Primary),
                     new ButtonBuilder().setCustomId('btn_enter_waitlist').setLabel('Enter Waitlist').setStyle(ButtonStyle.Secondary)
                 );
                 await interaction.editReply({ embeds: [embed], components: [row] });
-            } else if (commandName === 'taorolexacminh') {
+            } 
+            else if (commandName === 'taorolexacminh') {
                 await interaction.deferReply({ ephemeral: true });
                 if (!interaction.guild.roles.cache.find(r => r.name === 'Verified')) await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00' });
                 await interaction.editReply({ content: 'Đã tạo/kiểm tra xong Role Verified!' });
-            } else if (commandName === 'taoroletestermode') {
+            } 
+            else if (commandName === 'taoroletestermode') {
                 await interaction.deferReply({ ephemeral: true });
                 for (const m of MODE_LIST) {
                     if (!interaction.guild.roles.cache.find(r => r.name === `${m} Tester`)) {
                         await interaction.guild.roles.create({ name: `${m} Tester`, color: '#9B59B6' });
                     }
                 }
-                await interaction.editReply('Đã tạo xong các role Tester mode!');
-            } else if (commandName === 'taorolehethong') {
+                await interaction.editReply({ content: 'Đã tạo xong các role Tester mode!' });
+            } 
+            else if (commandName === 'taorolehethong') {
                 await interaction.deferReply({ ephemeral: true });
                 for (const rName of ['LT5', 'LT4', 'LT3', 'LT2', 'HT5', 'HT4', 'HT3', 'HT2', 'Tester', 'Player']) {
                     if (!interaction.guild.roles.cache.find(r => r.name === rName)) {
                         await interaction.guild.roles.create({ name: rName, color: '#9B59B6' });
                     }
                 }
-                await interaction.editReply('Đã tạo xong các role hệ thống!');
-            } else if (commandName === 'queue' || commandName === 'closequeue') {
+                await interaction.editReply({ content: 'Đã tạo xong các role hệ thống!' });
+            } 
+            else if (commandName === 'queue' || commandName === 'closequeue') {
                 await interaction.deferReply();
                 const modeLower = interaction.options.getString('mode');
                 const matched = MODE_LIST.find(m => m.toLowerCase() === modeLower);
@@ -141,7 +146,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 
                 const msg = await interaction.editReply({ embeds: [embed], components: row ? [row] : [] });
                 qObj.messageId = msg.id;
-            } else if (commandName === 'addtester') {
+            } 
+            else if (commandName === 'addtester') {
                 await interaction.deferReply({ ephemeral: true });
                 const modeLower = interaction.options.getString('mode');
                 const testerUser = interaction.options.getUser('tester');
@@ -161,7 +167,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
 
                 await interaction.editReply({ content: `Đã thêm <@${testerUser.id}> vào danh sách Tester của mode **${matched}**!` });
-            } else if (commandName === 'taotick') {
+            } 
+            else if (commandName === 'taotick') {
                 await interaction.deferReply({ ephemeral: true });
                 const player = interaction.options.getUser('player');
                 const mode = interaction.options.getString('mode');
@@ -176,10 +183,22 @@ client.on(Events.InteractionCreate, async interaction => {
                 });
                 await ch.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [new EmbedBuilder().setColor('#00FF00').setTitle(`Ticket - ${mode}`)] });
                 await interaction.editReply({ content: `Đã tạo ticket: <#${ch.id}>` });
-            } else if (commandName === 'dongtick') {
-                await interaction.reply({ content: 'Đóng ticket sau 3 giây...', ephemeral: true });
-                setTimeout(() => interaction.channel.delete().catch(()=>{}), 3000);
-            } else if (commandName === 'lenhang') {
+            } 
+            else if (commandName === 'dongtick') {
+                await interaction.deferReply({ ephemeral: true });
+                if (!interaction.channel.name.startsWith('ticket-')) {
+                    return interaction.editReply({ content: 'Lệnh này chỉ dùng được trong kênh ticket!' });
+                }
+                await interaction.editReply({ content: 'Đang đóng ticket trong 3 giây...' });
+                setTimeout(async () => {
+                    try {
+                        await interaction.channel.delete('Ticket closed');
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }, 3000);
+            } 
+            else if (commandName === 'lenhang') {
                 await interaction.deferReply();
                 const player = interaction.options.getUser('player');
                 const tester = interaction.options.getUser('tester');
@@ -219,10 +238,12 @@ client.on(Events.InteractionCreate, async interaction => {
                         }
                     } catch(e) { console.error("Lỗi cấp role:", e); } 
                 }
-            } else {
+            } 
+            else {
                 await interaction.reply({ content: 'Thực hiện thành công!', ephemeral: true });
             }
-        } else if (interaction.isButton()) {
+        } 
+        else if (interaction.isButton()) {
             if (interaction.customId === 'btn_open_verify_modal') {
                 const modal = new ModalBuilder().setCustomId('verify_modal').setTitle('Verify Account');
                 modal.addComponents(
@@ -231,10 +252,12 @@ client.on(Events.InteractionCreate, async interaction => {
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('account_type').setLabel('Premium/Cracked').setStyle(TextInputStyle.Short).setRequired(true))
                 );
                 await interaction.showModal(modal);
-            } else if (interaction.customId === 'btn_enter_waitlist') {
+            } 
+            else if (interaction.customId === 'btn_enter_waitlist') {
                 const menu = new StringSelectMenuBuilder().setCustomId('select_mode_waitlist').setPlaceholder('Chọn mode...').addOptions(MODE_LIST.map(m => new StringSelectMenuOptionBuilder().setLabel(m).setValue(m)));
                 await interaction.reply({ content: 'Chọn mode:', components: [new ActionRowBuilder().addComponents(menu)], ephemeral: true });
-            } else if (interaction.customId.startsWith('join_') || interaction.customId.startsWith('leave_')) {
+            } 
+            else if (interaction.customId.startsWith('join_') || interaction.customId.startsWith('leave_')) {
                 const [action, modeLower] = interaction.customId.split('_');
                 const matched = MODE_LIST.find(m => m.toLowerCase() === modeLower);
                 const qObj = queues[modeLower];
@@ -242,7 +265,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (action === 'leave') qObj.players = qObj.players.filter(id => id !== interaction.user.id);
                 await interaction.update({ embeds: [buildQueueEmbed(matched, qObj)] });
             }
-        } else if (interaction.isStringSelectMenu()) {
+        } 
+        else if (interaction.isStringSelectMenu()) {
             if (interaction.customId === 'select_mode_waitlist') {
                 const mode = interaction.values[0];
                 let role = interaction.guild.roles.cache.find(r => r.name === mode);
@@ -250,17 +274,20 @@ client.on(Events.InteractionCreate, async interaction => {
                 try { await interaction.member.roles.add(role); } catch(e){}
                 await interaction.update({ content: 'Đã nhận role mode thành công!', components: [] });
             }
-        } else if (interaction.isModalSubmit() && interaction.customId === 'verify_modal') {
+        } 
+        else if (interaction.isModalSubmit() && interaction.customId === 'verify_modal') {
             await interaction.reply({ content: 'Xác minh thành công!', ephemeral: true });
             let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
             if (role) { try { await interaction.member.roles.add(role); } catch(e){} }
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Lỗi tương tác:", e); 
+    }
 });
 
 client.login(TOKEN);
 
-// HTTP Server chống timeout port trên Render
+// HTTP Server duy trì cổng mạng cho Render
 const http = require('http');
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -268,6 +295,4 @@ const server = http.createServer((req, res) => {
 });
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`HTTP Server is running on port ${PORT}`);
-});
-                    
+    console.log(`HTTP 
