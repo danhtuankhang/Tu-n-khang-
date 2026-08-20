@@ -175,7 +175,7 @@ client.on(Events.InteractionCreate, async interaction => {
                         { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
                     ]
                 });
-                await ch.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [new EmbedBuilder().setColor('#00FF00'].setTitle(`Ticket - ${mode}`)] });
+                await ch.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [new EmbedBuilder().setColor('#00FF00').setTitle(`Ticket - ${mode}`)] });
                 await interaction.reply({ content: `Đã tạo ticket: <#${ch.id}>`, ephemeral: true });
             } 
             else if (commandName === 'dongtick') {
@@ -288,3 +288,4 @@ const PORT = process.env.PORT || 10000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`HTTP Server is running on port ${PORT}`);
 });
+                              
