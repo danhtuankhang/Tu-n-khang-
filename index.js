@@ -26,7 +26,6 @@ const commands = [
     new SlashCommandBuilder().setName('queue').setDescription('Mở hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() })))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('closequeue').setDescription('Đóng hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() })))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     
-    // Lệnh thêm Tester vào Queue
     new SlashCommandBuilder().setName('addtester')
         .setDescription('Thêm một Tester vào hàng đợi Queue theo mode')
         .addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() }))))
@@ -118,6 +117,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
                 await interaction.editReply('Đã tạo xong các role hệ thống!');
             } else if (commandName === 'queue' || commandName === 'closequeue') {
+                await interaction.deferReply();
                 const modeLower = interaction.options.getString('mode');
                 const matched = MODE_LIST.find(m => m.toLowerCase() === modeLower);
                 const qObj = queues[modeLower];
@@ -133,9 +133,10 @@ client.on(Events.InteractionCreate, async interaction => {
                     new ButtonBuilder().setCustomId(`join_${modeLower}`).setLabel('Join Queue').setStyle(ButtonStyle.Success),
                     new ButtonBuilder().setCustomId(`leave_${modeLower}`).setLabel('Leave Queue').setStyle(ButtonStyle.Danger)
                 ) : null;
-                const msg = await interaction.reply({ embeds: [embed], components: row ? [row] : [], fetchReply: true });
+                const msg = await interaction.editReply({ embeds: [embed], components: row ? [row] : [] });
                 qObj.messageId = msg.id;
             } else if (commandName === 'addtester') {
+                await interaction.deferReply({ ephemeral: true });
                 const modeLower = interaction.options.getString('mode');
                 const testerUser = interaction.options.getUser('tester');
                 const matched = MODE_LIST.find(m => m.toLowerCase() === modeLower);
@@ -153,8 +154,9 @@ client.on(Events.InteractionCreate, async interaction => {
                     } catch (e) {}
                 }
 
-                await interaction.reply({ content: `Đã thêm <@${testerUser.id}> vào danh sách Tester của mode **${matched}**!`, ephemeral: true });
+                await interaction.editReply({ content: `Đã thêm <@${testerUser.id}> vào danh sách Tester của mode **${matched}**!` });
             } else if (commandName === 'taotick') {
+                await interaction.deferReply({ ephemeral: true });
                 const player = interaction.options.getUser('player');
                 const mode = interaction.options.getString('mode');
                 const ch = await interaction.guild.channels.create({
@@ -167,11 +169,12 @@ client.on(Events.InteractionCreate, async interaction => {
                     ]
                 });
                 await ch.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [new EmbedBuilder().setColor('#00FF00').setTitle(`Ticket - ${mode}`)] });
-                await interaction.reply({ content: `Đã tạo ticket: <#${ch.id}>`, ephemeral: true });
+                await interaction.editReply({ content: `Đã tạo ticket: <#${ch.id}>` });
             } else if (commandName === 'dongtick') {
                 await interaction.reply({ content: 'Đóng ticket sau 3 giây...', ephemeral: true });
                 setTimeout(() => interaction.channel.delete().catch(()=>{}), 3000);
             } else if (commandName === 'lenhang') {
+                await interaction.deferReply();
                 const player = interaction.options.getUser('player');
                 const tester = interaction.options.getUser('tester');
                 const ign = interaction.options.getString('ign');
@@ -197,7 +200,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     .setThumbnail(`https://minotar.net/armor/bust/${ign}/100.png`)
                     .setDescription(`**Tester**\n<@${tester.id}>\n\n**Username**\n${ign}\n\n**Mode**\n${modeEmojis[mode] || '🎮'} ${mode}\n\n**Previous Rank**\n${getRankFullName(prevRankCode)}\n\n**Rank Earned**\n${getRankFullName(rankCode)}`);
 
-                await interaction.reply({ embeds: [embed] });
+                await interaction.editReply({ embeds: [embed] });
 
                 const rGive = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === rankCode.toLowerCase());
                 if (rGive) { 
@@ -250,4 +253,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
-
+                
