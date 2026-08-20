@@ -26,9 +26,15 @@ let queueVanilla = {
     history: []
 };
 
+const MODE_LIST = ['Sword', 'SMP', 'Vanilla', 'NetheritePot', 'Axe', 'Mace', 'UHC', 'DiamondPot'];
+
 const commands = [
     new SlashCommandBuilder().setName('xacminh').setDescription('Gửi bảng xác minh role').setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder().setName('taorolexacminh').setDescription('Tự động tạo Role xác minh').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    
+    // Lệnh tự động tạo role dạng: [Mode] Tester (Ví dụ: Mace Tester, Axe Tester,...) màu tím
+    new SlashCommandBuilder().setName('taoroletestermode').setDescription('Tự động tạo các role [Mode] Tester màu tím').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+
     new SlashCommandBuilder().setName('queuevanilla').setDescription('Mở hàng đợi Queue Vanilla').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('queuekomo').setDescription('Đóng Queue Vanilla').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('tophopvanill').setDescription('Xem danh sách tổng hợp'),
@@ -112,6 +118,29 @@ client.on(Events.InteractionCreate, async interaction => {
                     await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00', reason: 'Tạo role xác minh' });
                 }
                 await interaction.reply({ content: '✅ Đã tạo/kiểm tra xong Role Verified!', ephemeral: true });
+            }
+            else if (commandName === 'taoroletestermode') {
+                await interaction.deferReply({ ephemeral: true });
+                let createdRoles = [];
+
+                for (const modeName of MODE_LIST) {
+                    const roleName = `${modeName} Tester`; // Tạo tên dạng Mace Tester, Axe Tester,...
+                    let existingRole = interaction.guild.roles.cache.find(r => r.name === roleName);
+                    if (!existingRole) {
+                        try {
+                            await interaction.guild.roles.create({
+                                name: roleName,
+                                color: '#9B59B6', // Màu tím
+                                reason: 'Tự động tạo role [Mode] Tester màu tím'
+                            });
+                            createdRoles.push(roleName);
+                        } catch (err) {
+                            console.error(`Không thể tạo role ${roleName}:`, err);
+                        }
+                    }
+                }
+
+                await interaction.editReply(`✅ Đã hoàn tất tạo các role Tester: ${createdRoles.length > 0 ? createdRoles.join(', ') : 'Tất cả các role này đã tồn tại từ trước!'}`);
             }
             else if (commandName === 'queuevanilla') {
                 queueVanilla.isOpen = true;
@@ -234,14 +263,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     .setCustomId('select_mode_waitlist')
                     .setPlaceholder('Chọn mode...')
                     .addOptions(
-                        new StringSelectMenuOptionBuilder().setLabel('Sword').setValue('Sword'),
-                        new StringSelectMenuOptionBuilder().setLabel('SMP').setValue('SMP'),
-                        new StringSelectMenuOptionBuilder().setLabel('Vanilla').setValue('Vanilla'),
-                        new StringSelectMenuOptionBuilder().setLabel('NetheritePot').setValue('NetheritePot'),
-                        new StringSelectMenuOptionBuilder().setLabel('Axe').setValue('Axe'),
-                        new StringSelectMenuOptionBuilder().setLabel('Mace').setValue('Mace'),
-                        new StringSelectMenuOptionBuilder().setLabel('UHC').setValue('UHC'),
-                        new StringSelectMenuOptionBuilder().setLabel('DiamondPot').setValue('DiamondPot')
+                        MODE_LIST.map(mode => new StringSelectMenuOptionBuilder().setLabel(mode).setValue(mode))
                     );
 
                 const row = new ActionRowBuilder().addComponents(selectMenu);
@@ -268,7 +290,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 let role = guild.roles.cache.find(r => r.name === selectedMode);
                 if (!role) {
                     try {
-                        role = await guild.roles.create({ name: selectedMode, color: '#3498DB', reason: `Tự động tạo role mode` });
+                        role = await guild.roles.create({ name: selectedMode, color: '#9B59B6', reason: `Tự động tạo role mode` });
                     } catch (e) { console.error(e); }
                 }
 
@@ -310,4 +332,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
-                    
+                            
