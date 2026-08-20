@@ -32,9 +32,27 @@ const commands = [
     new SlashCommandBuilder().setName('queuevanilla').setDescription('Mở hàng đợi Queue Vanilla').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('queuekomo').setDescription('Đóng Queue Vanilla').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('tophopvanill').setDescription('Xem danh sách tổng hợp'),
-    new SlashCommandBuilder().setName('ticketvanilla').setDescription('Tạo channel ticket').addUserOption(opt => opt.setName('player').setDescription('Người chơi').setRequired(true)),
-    new SlashCommandBuilder().setName('dongtick').setDescription('Đóng ticket'),
-    new SlashCommandBuilder().setName('lenhang').setDescription('Cập nhật kết quả').addUserOption(opt => opt.setName('tester').setDescription('Tester').setRequired(true)).addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).addStringOption(opt => opt.setName('rank').setDescription('Rank').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    
+    // Lệnh tạo ticket theo mode
+    new SlashCommandBuilder().setName('taotick')
+        .setDescription('Tạo channel ticket theo mode cho người chơi')
+        .addUserOption(opt => opt.setName('player').setDescription('Người chơi').setRequired(true))
+        .addStringOption(opt => opt.setName('mode').setDescription('Chế độ chơi (Mode)').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+
+    // Lệnh đóng ticket theo mode (hoặc đóng kênh ticket hiện tại)
+    new SlashCommandBuilder().setName('dongtick')
+        .setDescription('Đóng ticket hiện tại')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+
+    new SlashCommandBuilder().setName('lenhang')
+        .setDescription('Cập nhật kết quả test lên hạng')
+        .addUserOption(opt => opt.setName('player').setDescription('Người chơi được test').setRequired(true))
+        .addUserOption(opt => opt.setName('tester').setDescription('Người kiểm tra (Tester)').setRequired(true))
+        .addStringOption(opt => opt.setName('mode').setDescription('Chế độ chơi (Mode)').setRequired(true))
+        .addStringOption(opt => opt.setName('rank').setDescription('Rank (LT/HT từ 5 đến 2)').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+
     new SlashCommandBuilder().setName('ban').setDescription('Cấm người chơi').addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('li_do').setDescription('Lý do').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
     new SlashCommandBuilder().setName('win').setDescription('Ghi nhận tỉ số').addUserOption(opt => opt.setName('tester').setDescription('Tester').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('ti_so').setDescription('Tỉ số').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
 ].map(cmd => cmd.toJSON());
@@ -119,14 +137,84 @@ client.on(Events.InteractionCreate, async interaction => {
         else if (commandName === 'tophopvanill') {
             await interaction.reply({ content: 'Danh sách tổng hợp...', ephemeral: true });
         }
-        else if (commandName === 'ticketvanilla') {
-            await interaction.reply({ content: 'Đã tạo ticket...', ephemeral: true });
+        else if (commandName === 'taotick') {
+            const player = interaction.options.getUser('player');
+            const mode = interaction.options.getString('mode');
+            const guild = interaction.guild;
+
+            try {
+                // Tạo channel ticket mới dạng text channel
+                const ticketChannel = await guild.channels.create({
+                    name: `ticket-${player.username}-${mode}`.toLowerCase(),
+                    type: ChannelType.GuildText,
+                    permissionOverwrites: [
+                        {
+                            id: guild.id, // Ẩn với mọi người
+                            deny: [PermissionFlagsBits.ViewChannel],
+                        },
+                        {
+                            id: player.id, // Cho phép người chơi thấy
+                            allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory],
+                        },
+                        {
+                            id: interaction.user.id, // Cho phép người tạo (tester/admin) thấy
+                            allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory],
+                        },
+                        {
+                            id: client.user.id, // Bot quản lý
+                            allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels],
+                        }
+                    ]
+                });
+
+                const embed = new EmbedBuilder()
+                    .setColor('#00FF00')
+                    .setTitle(`🎫 Ticket Test - Mode: ${mode}`)
+                    .setDescription(`Xin chào <@${player.id}> và <@${interaction.user.id}>!\nKênh ticket này đã được tạo riêng cho chế độ **${mode}**.\nHãy trao đổi và tiến hành test tại đây.`);
+
+                await ticketChannel.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [embed] });
+                await interaction.reply({ content: `✅ Đã tạo thành công ticket: <#${ticketChannel.id}>`, ephemeral: true });
+            } catch (e) {
+                await interaction.reply({ content: `❌ Không thể tạo ticket: ${e.message}`, ephemeral: true });
+            }
         }
         else if (commandName === 'dongtick') {
-            await interaction.reply({ content: 'Đang đóng ticket...', ephemeral: true });
-            setTimeout(() => interaction.channel.delete().catch(() => {}), 3000);
+            const channel = interaction.channel;
+            await interaction.reply({ content: '🔒 Ticket sẽ được đóng sau 3 giây nữa...', ephemeral: true });
+            setTimeout(() => {
+                channel.delete().catch(() => {});
+            }, 3000);
         }
-        else if (commandName === 'lenhang' || commandName === 'ban' || commandName === 'win') {
+        else if (commandName === 'lenhang') {
+            const player = interaction.options.getUser('player');
+            const tester = interaction.options.getUser('tester');
+            const mode = interaction.options.getString('mode');
+            const rank = interaction.options.getString('rank');
+
+            const embed = new EmbedBuilder()
+                .setColor('#3498DB')
+                .setTitle('🏆 Cập Nhật Kết Quả Test Lên Hạng')
+                .addFields(
+                    { name: '👤 Người chơi', value: `<@${player.id}>`, inline: true },
+                    { name: '🛡️ Tester', value: `<@${tester.id}>`, inline: true },
+                    { name: '⚔️ Mode', value: mode, inline: true },
+                    { name: '🎖️ Rank Đạt Được', value: rank, inline: true }
+                )
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [embed] });
+
+            let roleToGive = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === rank.toLowerCase());
+            if (roleToGive) {
+                try {
+                    const member = await interaction.guild.members.fetch(player.id);
+                    await member.roles.add(roleToGive);
+                } catch (e) {
+                    console.error("Không thể cấp role rank:", e);
+                }
+            }
+        }
+        else if (commandName === 'ban' || commandName === 'win') {
             await interaction.reply({ content: '✅ Đã thực hiện lệnh thành công!', ephemeral: true });
         }
     }
@@ -229,7 +317,6 @@ client.on(Events.InteractionCreate, async interaction => {
                 ephemeral: true 
             });
 
-            // Tự động cấp role 'Verified' khi điền xong form
             let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
             if (role) {
                 try {
@@ -243,3 +330,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
+                                                    
