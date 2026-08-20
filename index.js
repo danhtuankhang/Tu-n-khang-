@@ -55,7 +55,12 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.once(Events.ClientReady, async () => {
     console.log(`✅ Bot ${client.user.tag} đã online!`);
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
+    try {
+        await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
+        console.log('✅ Đã đồng bộ slash commands thành công!');
+    } catch (error) {
+        console.error('❌ Lỗi đồng bộ commands:', error);
+    }
 });
 
 client.on(Events.GuildMemberAdd, async member => {
@@ -66,7 +71,7 @@ client.on(Events.GuildMemberAdd, async member => {
         }
         await member.roles.add(role);
     } catch (error) {
-        console.error(error);
+        console.error('Lỗi khi thêm role thành viên mới:', error);
     }
 });
 
@@ -93,7 +98,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 const embed = new EmbedBuilder()
                     .setColor('#DC143C')
                     .setTitle('📝 Evaluation Testing Waitlist')
-                    .setDescription('Upon applying, you will be added to a waitlist channel.\nHere you will be pinged when a tester of your region is available.\nIf you are HT3 or higher, a high ticket will be created.\n\n• Region should be the region of the server you wish to test on\n• Username should be the name of the account you will be testing on\n\n🛑 **Failure to provide authentic information will result in a denied test.**');
+                    .setDescription('Upon applying, you will be added to a waitlist channel.\nHere you will be pinged when a tester of your region is available.\nIf you are HT3 or higher, a high ticket will be created.');
                 
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('btn_open_verify_modal').setLabel('Verify Account').setStyle(ButtonStyle.Primary),
@@ -240,7 +245,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     );
 
                 const row = new ActionRowBuilder().addComponents(selectMenu);
-                await interaction.reply({ content: 'Vui lòng chọn chế độ chơi (mode) bên dưới:', components: [row], flags: 64 });
+                await interaction.reply({ content: 'Vui lòng chọn chế độ chơi (mode) bên dưới:', components: [row], ephemeral: true });
             }
             else if (interaction.customId === 'btn_join_queue') {
                 if (!queueVanilla.players.includes(interaction.user.id)) {
@@ -286,7 +291,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 await interaction.reply({ 
                     content: `✅ Xác minh tài khoản thành công!\n- **IGN:** ${ign}\n- **Server:** ${serverRegion}\n- **Loại tài khoản:** ${accountType}`, 
-                    flags: 64 
+                    ephemeral: true 
                 });
 
                 let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
@@ -300,8 +305,9 @@ client.on(Events.InteractionCreate, async interaction => {
             }
         }
     } catch (error) {
-        console.error("Lỗi xử lý tương tác:", error);
+        console.error("Lỗi xử lý sự kiện interaction:", error);
     }
 });
 
 client.login(TOKEN);
+                    
