@@ -91,15 +91,17 @@ client.on(Events.InteractionCreate, async interaction => {
         if (interaction.isChatInputCommand()) {
             const { commandName } = interaction;
             if (commandName === 'xacminh') {
+                await interaction.deferReply();
                 const embed = new EmbedBuilder().setColor('#DC143C').setTitle('📝 Evaluation Testing Waitlist').setDescription('Nhấn nút bên dưới để xác minh tài khoản.');
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('btn_open_verify_modal').setLabel('Verify Account').setStyle(ButtonStyle.Primary),
                     new ButtonBuilder().setCustomId('btn_enter_waitlist').setLabel('Enter Waitlist').setStyle(ButtonStyle.Secondary)
                 );
-                await interaction.reply({ embeds: [embed], components: [row] });
+                await interaction.editReply({ embeds: [embed], components: [row] });
             } else if (commandName === 'taorolexacminh') {
+                await interaction.deferReply({ ephemeral: true });
                 if (!interaction.guild.roles.cache.find(r => r.name === 'Verified')) await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00' });
-                await interaction.reply({ content: 'Đã tạo/kiểm tra xong Role Verified!', ephemeral: true });
+                await interaction.editReply({ content: 'Đã tạo/kiểm tra xong Role Verified!' });
             } else if (commandName === 'taoroletestermode') {
                 await interaction.deferReply({ ephemeral: true });
                 for (const m of MODE_LIST) {
@@ -172,7 +174,7 @@ client.on(Events.InteractionCreate, async interaction => {
                         { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
                     ]
                 });
-                await ch.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [new EmbedBuilder().setColor('#00FF00').setTitle(`Ticket - ${mode}`)] });
+                await ch.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [new EmbedBuilder().setColor('#00FF00'].setTitle(`Ticket - ${mode}`)] });
                 await interaction.editReply({ content: `Đã tạo ticket: <#${ch.id}>` });
             } else if (commandName === 'dongtick') {
                 await interaction.reply({ content: 'Đóng ticket sau 3 giây...', ephemeral: true });
@@ -257,4 +259,15 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
-                                
+
+// HTTP Server chống timeout port trên Render
+const http = require('http');
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Bot is running successfully!');
+});
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`HTTP Server is running on port ${PORT}`);
+});
+                               
