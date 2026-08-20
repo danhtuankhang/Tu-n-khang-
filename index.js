@@ -18,7 +18,6 @@ const client = new Client({
 
 const MODE_LIST = ['Sword', 'SMP', 'Vanilla', 'NetheritePot', 'Axe', 'Mace', 'UHC', 'DiamondPot'];
 
-// Quản lý queue cho từng mode động
 const queues = {};
 MODE_LIST.forEach(mode => {
     queues[mode.toLowerCase()] = {
@@ -30,12 +29,50 @@ MODE_LIST.forEach(mode => {
     };
 });
 
-// Tạo danh sách lệnh Slash tự động cho từng mode
-const slashCommands = [
+const commands = [
     new SlashCommandBuilder().setName('xacminh').setDescription('Gửi bảng xác minh role').setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder().setName('taorolexacminh').setDescription('Tự động tạo Role xác minh').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('taoroletestermode').setDescription('Tự động tạo các role [Mode] Tester màu tím').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('taorolehethong').setDescription('Tự động tạo role Tester, Player và các Rank lên hạng màu tím').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    
+    // Lệnh /queue có danh sách lựa chọn mode trực quan
+    new SlashCommandBuilder().setName('queue')
+        .setDescription('Mở hàng đợi Queue theo mode')
+        .addStringOption(opt => 
+            opt.setName('mode')
+               .setDescription('Chọn mode để mở')
+               .setRequired(true)
+               .addChoices(
+                   { name: 'Sword', value: 'sword' },
+                   { name: 'SMP', value: 'smp' },
+                   { name: 'Vanilla', value: 'vanilla' },
+                   { name: 'NetheritePot', value: 'netheritepot' },
+                   { name: 'Axe', value: 'axe' },
+                   { name: 'Mace', value: 'mace' },
+                   { name: 'UHC', value: 'uhc' },
+                   { name: 'DiamondPot', value: 'diamondpot' }
+               ))
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+
+    // Lệnh /closequeue có danh sách lựa chọn mode trực quan
+    new SlashCommandBuilder().setName('closequeue')
+        .setDescription('Đóng hàng đợi Queue theo mode')
+        .addStringOption(opt => 
+            opt.setName('mode')
+               .setDescription('Chọn mode để đóng')
+               .setRequired(true)
+               .addChoices(
+                   { name: 'Sword', value: 'sword' },
+                   { name: 'SMP', value: 'smp' },
+                   { name: 'Vanilla', value: 'vanilla' },
+                   { name: 'NetheritePot', value: 'netheritepot' },
+                   { name: 'Axe', value: 'axe' },
+                   { name: 'Mace', value: 'mace' },
+                   { name: 'UHC', value: 'uhc' },
+                   { name: 'DiamondPot', value: 'diamondpot' }
+               ))
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+
     new SlashCommandBuilder().setName('tophopvanill').setDescription('Xem danh sách tổng hợp'),
     new SlashCommandBuilder().setName('taotick')
         .setDescription('Tạo channel ticket theo mode cho người chơi')
@@ -54,25 +91,15 @@ const slashCommands = [
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('ban').setDescription('Cấm người chơi').addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('li_do').setDescription('Lý do').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
     new SlashCommandBuilder().setName('win').setDescription('Ghi nhận tỉ số').addUserOption(opt => opt.setName('tester').setDescription('Tester').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('ti_so').setDescription('Tỉ số').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
-];
+].map(cmd => cmd.toJSON());
 
-// Thêm lệnh mở/đóng queue tự động cho từng mode (VD: /queueace, /dongaxe, /queuemace, /dongmace...)
-MODE_LIST.forEach(mode => {
-    const lower = mode.toLowerCase();
-    slashCommands.push(
-        new SlashCommandBuilder().setName(`queue${lower}`).setDescription(`Mở hàng đợi Queue ${mode}`).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-        new SlashCommandBuilder().setName(`dong${lower}`).setDescription(`Đóng Queue ${mode}`).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
-    );
-});
-
-const commands = slashCommands.map(cmd => cmd.toJSON());
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.once(Events.ClientReady, async () => {
     console.log(`✅ Bot ${client.user.tag} đã online!`);
     try {
         await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-        console.log('✅ Đã đồng bộ toàn bộ slash commands thành công!');
+        console.log('✅ Đã đồng bộ slash commands thành công!');
     } catch (error) {
         console.error('❌ Lỗi đồng bộ commands:', error);
     }
@@ -158,31 +185,28 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
                 await interaction.editReply(`✅ Đã tạo các role hệ thống màu tím: ${createdRoles.length > 0 ? createdRoles.join(', ') : 'Đã tồn tại từ trước!'}`);
             }
-            else if (commandName.startsWith('queue')) {
-                const modeLower = commandName.replace('queue', '');
+            else if (commandName === 'queue') {
+                const modeLower = interaction.options.getString('mode');
                 const matchedMode = MODE_LIST.find(m => m.toLowerCase() === modeLower);
-                if (matchedMode) {
-                    const qObj = queues[modeLower];
-                    qObj.isOpen = true;
-                    qObj.players = [];
-                    qObj.testers = [interaction.user.id];
-                    qObj.channelId = interaction.channelId;
+                const qObj = queues[modeLower];
 
-                    const row = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setCustomId(`join_${modeLower}`).setLabel('Join Queue').setStyle(ButtonStyle.Success),
-                        new ButtonBuilder().setCustomId(`leave_${modeLower}`).setLabel('Leave Queue').setStyle(ButtonStyle.Danger)
-                    );
-                    const msg = await interaction.reply({ embeds: [buildQueueEmbed(matchedMode, qObj)], components: [row], fetchReply: true });
-                    qObj.messageId = msg.id;
-                }
+                qObj.isOpen = true;
+                qObj.players = [];
+                qObj.testers = [interaction.user.id];
+                qObj.channelId = interaction.channelId;
+
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId(`join_${modeLower}`).setLabel('Join Queue').setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId(`leave_${modeLower}`).setLabel('Leave Queue').setStyle(ButtonStyle.Danger)
+                );
+                const msg = await interaction.reply({ embeds: [buildQueueEmbed(matchedMode, qObj)], components: [row], fetchReply: true });
+                qObj.messageId = msg.id;
             }
-            else if (commandName.startsWith('dong')) {
-                const modeLower = commandName.replace('dong', '');
+            else if (commandName === 'closequeue') {
+                const modeLower = interaction.options.getString('mode');
                 const matchedMode = MODE_LIST.find(m => m.toLowerCase() === modeLower);
-                if (matchedMode) {
-                    queues[modeLower].isOpen = false;
-                    await interaction.reply({ content: `🛑 Đã đóng Queue ${matchedMode}!`, ephemeral: true });
-                }
+                queues[modeLower].isOpen = false;
+                await interaction.reply({ content: `🛑 Đã đóng Queue ${matchedMode}!`, ephemeral: true });
             }
             else if (commandName === 'tophopvanill') {
                 await interaction.reply({ content: 'Danh sách tổng hợp...', ephemeral: true });
@@ -334,4 +358,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
-                    
+                                                       
