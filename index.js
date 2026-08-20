@@ -1,7 +1,7 @@
 const { 
     Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, 
     PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, 
-    ButtonStyle, ChannelType 
+    ButtonStyle, ChannelType, ModalBuilder, TextInputBuilder, TextInputStyle 
 } = require('discord.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -199,15 +199,25 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isChatInputCommand()) {
         const { commandName } = interaction;
 
-        // /xacminh
+        // /xacminh (Gửi bảng giao diện xác minh kèm nút Verify Account)
         if (commandName === 'xacminh') {
             const embed = new EmbedBuilder()
-                .setColor('#3498DB')
-                .setTitle('🛡️ XÁC MINH TÀI KHOẢN & NHẬN ROLE')
-                .setDescription('Nhấn vào nút bên dưới để hoàn tất xác minh vào server.');
+                .setColor('#DC143C')
+                .setTitle('📝 Evaluation Testing Waitlist')
+                .setDescription(
+                    'Upon applying, you will be added to a waitlist channel.\n' +
+                    'Here you will be pinged when a tester of your region is available.\n' +
+                    'If you are HT3 or higher, a high ticket will be created.\n\n' +
+                    '• Region should be the region of the server you wish to test on\n\n' +
+                    '• Username should be the name of the account you will be testing on\n\n' +
+                    '🛑 **Failure to provide authentic information will result in a denied test.**'
+                );
 
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('btn_verify').setLabel('Xác minh ngay').setStyle(ButtonStyle.Success)
+                new ButtonBuilder()
+                    .setCustomId('btn_open_verify_modal')
+                    .setLabel('Verify Account')
+                    .setStyle(ButtonStyle.Primary)
             );
 
             await interaction.reply({ embeds: [embed], components: [row] });
@@ -411,15 +421,40 @@ client.on('interactionCreate', async interaction => {
 
     // --- XỬ LÝ NÚT BẤM (BUTTONS) ---
     if (interaction.isButton()) {
-        // Nút xác minh
-        if (interaction.customId === 'btn_verify') {
-            let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
-            if (role) {
-                await interaction.member.roles.add(role);
-                await interaction.reply({ content: '✅ Bạn đã xác minh thành công và nhận role!', ephemeral: true });
-            } else {
-                await interaction.reply({ content: '❌ Hệ thống chưa thiết lập role Verified!', ephemeral: true });
-            }
+        // Mở Modal Xác Minh khi bấm nút Verify Account
+        if (interaction.customId === 'btn_open_verify_modal') {
+            const modal = new ModalBuilder()
+                .setCustomId('verify_modal')
+                .setTitle('Verify Account & Server');
+
+            const ignInput = new TextInputBuilder()
+                .setCustomId('ign')
+                .setLabel('In-game name (IGN)')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('Nhập tên Minecraft của bạn')
+                .setRequired(true);
+
+            const serverInput = new TextInputBuilder()
+                .setCustomId('server')
+                .setLabel('Server muốn test')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('Ví dụ: NA, ASIA, EU...')
+                .setRequired(true);
+
+            const typeInput = new TextInputBuilder()
+                .setCustomId('account_type')
+                .setLabel('Loại tài khoản (Premium / Cracked)')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('Nhập Premium hoặc Cracked')
+                .setRequired(true);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(ignInput),
+                new ActionRowBuilder().addComponents(serverInput),
+                new ActionRowBuilder().addComponents(typeInput)
+            );
+
+            await interaction.showModal(modal);
         }
 
         // Nút Join Queue
@@ -428,31 +463,4 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.reply({ content: '❌ Hàng đợi đã đóng!', ephemeral: true });
             }
             if (queueVanilla.players.includes(interaction.user.id)) {
-                return await interaction.reply({ content: '⚠️ Bạn đã có trong hàng đợi rồi!', ephemeral: true });
-            }
-            if (queueVanilla.players.length >= 20) {
-                return await interaction.reply({ content: '❌ Hàng đợi đã đầy (20/20)!', ephemeral: true });
-            }
-
-            queueVanilla.players.push(interaction.user.id);
-            if (!queueVanilla.history.includes(interaction.user.id)) {
-                queueVanilla.history.push(interaction.user.id);
-            }
-
-            await interaction.update({ embeds: [buildQueueEmbed()] });
-        }
-
-        // Nút Leave Queue
-        else if (interaction.customId === 'btn_leave_queue') {
-            if (!queueVanilla.players.includes(interaction.user.id)) {
-                return await interaction.reply({ content: '⚠️ Bạn chưa tham gia hàng đợi!', ephemeral: true });
-            }
-
-            queueVanilla.players = queueVanilla.players.filter(id => id !== interaction.user.id);
-            await interaction.update({ embeds: [buildQueueEmbed()] });
-        }
-    }
-});
-
-client.login(TOKEN);
-        
+                return await
