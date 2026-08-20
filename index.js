@@ -287,7 +287,6 @@ client.on(Events.InteractionCreate, async interaction => {
 
 client.login(TOKEN);
 
-// HTTP Server duy trì cổng mạng cho Render
 const http = require('http');
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -295,4 +294,6 @@ const server = http.createServer((req, res) => {
 });
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`HTTP 
+    console.log(`HTTP Server is running on port ${PORT}`);
+});
+                
