@@ -2,7 +2,7 @@ const {
     Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, 
     PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, 
     ButtonStyle, ChannelType, ModalBuilder, TextInputBuilder, TextInputStyle,
-    Events 
+    StringSelectMenuBuilder, StringSelectMenuOptionBuilder, Events 
 } = require('discord.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -89,7 +89,15 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.reply({ embeds: [embed], components: [row] });
         }
         else if (commandName === 'taorolexacminh') {
-            await interaction.reply({ content: '✅ Đã kiểm tra role!', ephemeral: true });
+            try {
+                let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
+                if (!role) {
+                    await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00', reason: 'Tạo role xác minh' });
+                }
+                await interaction.reply({ content: '✅ Đã tạo/kiểm tra xong Role Verified!', ephemeral: true });
+            } catch (e) {
+                await interaction.reply({ content: `❌ Lỗi: ${e.message}`, ephemeral: true });
+            }
         }
         else if (commandName === 'queuevanilla') {
             queueVanilla.isOpen = true;
@@ -157,7 +165,22 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.showModal(modal);
         }
         else if (interaction.customId === 'btn_enter_waitlist') {
-            await interaction.reply({ content: '✅ Bạn đã được thêm vào hàng đợi chờ test!', ephemeral: true });
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('select_mode_waitlist')
+                .setPlaceholder('Chọn mode...')
+                .addOptions(
+                    new StringSelectMenuOptionBuilder().setLabel('Sword').setValue('Sword'),
+                    new StringSelectMenuOptionBuilder().setLabel('SMP').setValue('SMP'),
+                    new StringSelectMenuOptionBuilder().setLabel('Vanilla').setValue('Vanilla'),
+                    new StringSelectMenuOptionBuilder().setLabel('NetheritePot').setValue('NetheritePot'),
+                    new StringSelectMenuOptionBuilder().setLabel('Axe').setValue('Axe'),
+                    new StringSelectMenuOptionBuilder().setLabel('Mace').setValue('Mace'),
+                    new StringSelectMenuOptionBuilder().setLabel('UHC').setValue('UHC'),
+                    new StringSelectMenuOptionBuilder().setLabel('DiamondPot').setValue('DiamondPot')
+                );
+
+            const row = new ActionRowBuilder().addComponents(selectMenu);
+            await interaction.reply({ content: 'Vui lòng chọn chế độ chơi (mode) bên dưới:', components: [row], ephemeral: true });
         }
         else if (interaction.customId === 'btn_join_queue') {
             if (!queueVanilla.players.includes(interaction.user.id)) {
@@ -171,6 +194,30 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     }
 
+    if (interaction.isStringSelectMenu()) {
+        if (interaction.customId === 'select_mode_waitlist') {
+            const selectedMode = interaction.values[0];
+            const guild = interaction.guild;
+            const member = interaction.member;
+
+            let role = guild.roles.cache.find(r => r.name === selectedMode);
+            if (!role) {
+                try {
+                    role = await guild.roles.create({ name: selectedMode, color: '#3498DB', reason: `Tự động tạo role mode` });
+                } catch (e) { console.error(e); }
+            }
+
+            if (role) {
+                try {
+                    await member.roles.add(role);
+                    await interaction.update({ content: `✅ Đã chọn mode **${selectedMode}** và được cấp role thành công!`, components: [] });
+                } catch (e) {
+                    await interaction.update({ content: `⚠️ Đã chọn **${selectedMode}**, nhưng bot thiếu quyền cấp role!`, components: [] });
+                }
+            }
+        }
+    }
+
     if (interaction.isModalSubmit()) {
         if (interaction.customId === 'verify_modal') {
             const ign = interaction.fields.getTextInputValue('ign');
@@ -178,12 +225,21 @@ client.on(Events.InteractionCreate, async interaction => {
             const accountType = interaction.fields.getTextInputValue('account_type');
 
             await interaction.reply({ 
-                content: `✅ Xác minh thành công!\n- **IGN:** ${ign}\n- **Server:** ${serverRegion}\n- **Loại tài khoản:** ${accountType}`, 
+                content: `✅ Xác minh tài khoản thành công!\n- **IGN:** ${ign}\n- **Server:** ${serverRegion}\n- **Loại tài khoản:** ${accountType}`, 
                 ephemeral: true 
             });
+
+            // Tự động cấp role 'Verified' khi điền xong form
+            let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
+            if (role) {
+                try {
+                    await interaction.member.roles.add(role);
+                } catch (e) {
+                    console.error("Không thể cấp role Verified:", e);
+                }
+            }
         }
     }
 });
 
 client.login(TOKEN);
-            
