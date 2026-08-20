@@ -190,6 +190,17 @@ client.on(Events.InteractionCreate, async interaction => {
                 const matchedMode = MODE_LIST.find(m => m.toLowerCase() === modeLower);
                 const qObj = queues[modeLower];
 
+                // Nếu đã có tin nhắn queue/close trước đó, tự động xóa đi
+                if (qObj.messageId && qObj.channelId) {
+                    try {
+                        const oldChannel = await interaction.guild.channels.fetch(qObj.channelId);
+                        const oldMsg = await oldChannel.messages.fetch(qObj.messageId);
+                        await oldMsg.delete();
+                    } catch (e) {
+                        // Bỏ qua nếu không tìm thấy tin nhắn cũ
+                    }
+                }
+
                 qObj.isOpen = true;
                 qObj.players = [];
                 qObj.testers = [interaction.user.id];
@@ -205,8 +216,33 @@ client.on(Events.InteractionCreate, async interaction => {
             else if (commandName === 'closequeue') {
                 const modeLower = interaction.options.getString('mode');
                 const matchedMode = MODE_LIST.find(m => m.toLowerCase() === modeLower);
-                queues[modeLower].isOpen = false;
-                await interaction.reply({ content: `🛑 Đã đóng Queue ${matchedMode}!`, ephemeral: true });
+                const qObj = queues[modeLower];
+
+                // Xóa tin nhắn queue đang mở (nếu có) trước khi gửi bảng đóng
+                if (qObj.messageId && qObj.channelId) {
+                    try {
+                        const oldChannel = await interaction.guild.channels.fetch(qObj.channelId);
+                        const oldMsg = await oldChannel.messages.fetch(qObj.messageId);
+                        await oldMsg.delete();
+                    } catch (e) {
+                        // Bỏ qua nếu không tìm thấy
+                    }
+                }
+
+                qObj.isOpen = false;
+
+                // Tạo bảng thông báo đóng giống như hình mẫu bạn cung cấp
+                const closedEmbed = new EmbedBuilder()
+                    .setColor('#FF0000')
+                    .setTitle(`No Testers Online ${matchedMode}`)
+                    .setDescription(`No testers for ${matchedMode} are available at this time.\nYou will be pinged when a tester is available.\nCheck back later!`)
+                    .setFooter({ text: `Last testing session: ${new Date().toLocaleString('vi-VN')}` });
+
+                const msg = await interaction.reply({ embeds: [closedEmbed], fetchReply: true });
+                
+                // Lưu lại ID của thông báo đóng để lần sau mở queue mới sẽ xóa bảng đóng này đi
+                qObj.messageId = msg.id;
+                qObj.channelId = interaction.channelId;
             }
             else if (commandName === 'tophopvanill') {
                 await interaction.reply({ content: 'Danh sách tổng hợp...', ephemeral: true });
@@ -318,44 +354,4 @@ client.on(Events.InteractionCreate, async interaction => {
                 const member = interaction.member;
 
                 let role = guild.roles.cache.find(r => r.name === selectedMode);
-                if (!role) {
-                    try {
-                        role = await guild.roles.create({ name: selectedMode, color: '#9B59B6', reason: 'Tự động tạo role mode' });
-                    } catch (e) { console.error(e); }
-                }
-
-                if (role) {
-                    try {
-                        await member.roles.add(role);
-                        await interaction.update({ content: `✅ Đã chọn mode **${selectedMode}** và được cấp role thành công!`, components: [] });
-                    } catch (e) {
-                        await interaction.update({ content: `⚠️ Đã chọn **${selectedMode}**, nhưng bot thiếu quyền cấp role!`, components: [] });
-                    }
-                }
-            }
-        }
-
-        if (interaction.isModalSubmit()) {
-            if (interaction.customId === 'verify_modal') {
-                const ign = interaction.fields.getTextInputValue('ign');
-                const serverRegion = interaction.fields.getTextInputValue('server_region');
-                const accountType = interaction.fields.getTextInputValue('account_type');
-
-                await interaction.reply({ 
-                    content: `✅ Xác minh tài khoản thành công!\n- **IGN:** ${ign}\n- **Server:** ${serverRegion}\n- **Loại tài khoản:** ${accountType}`, 
-                    ephemeral: true 
-                });
-
-                let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
-                if (role) {
-                    try { await interaction.member.roles.add(role); } catch (e) { console.error(e); }
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Lỗi xử lý sự kiện interaction:", error);
-    }
-});
-
-client.login(TOKEN);
-                    
+            
