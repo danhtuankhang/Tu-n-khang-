@@ -121,11 +121,14 @@ client.on(Events.InteractionCreate, async interaction => {
                 const modeLower = interaction.options.getString('mode');
                 const matched = MODE_LIST.find(m => m.toLowerCase() === modeLower);
                 const qObj = queues[modeLower];
-                if (qObj.messageId && qObj.channelId) {
-                    try { const ch = await interaction.guild.channels.fetch(qObj.channelId); const msg = await ch.messages.fetch(qObj.messageId); await msg.delete(); } catch(e){}
-                }
+                
                 qObj.isOpen = (commandName === 'queue');
-                if (qObj.isOpen) { qObj.players = []; qObj.testers = [interaction.user.id]; }
+                if (qObj.isOpen) { 
+                    qObj.players = []; 
+                    if (!qObj.testers.includes(interaction.user.id)) {
+                        qObj.testers.push(interaction.user.id);
+                    }
+                }
                 qObj.channelId = interaction.channelId;
                 
                 const embed = qObj.isOpen ? buildQueueEmbed(matched, qObj) : new EmbedBuilder().setColor('#FF0000').setTitle(`No Testers Online ${matched}`).setDescription('Queue closed.');
@@ -133,6 +136,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     new ButtonBuilder().setCustomId(`join_${modeLower}`).setLabel('Join Queue').setStyle(ButtonStyle.Success),
                     new ButtonBuilder().setCustomId(`leave_${modeLower}`).setLabel('Leave Queue').setStyle(ButtonStyle.Danger)
                 ) : null;
+                
                 const msg = await interaction.editReply({ embeds: [embed], components: row ? [row] : [] });
                 qObj.messageId = msg.id;
             } else if (commandName === 'addtester') {
@@ -253,4 +257,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
-                    
+                                
