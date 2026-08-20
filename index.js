@@ -352,6 +352,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (role) {
                     try {
                         await member.roles.add(role);
-                        await interaction.update({ content: `✅ Đã chọn mode **${selectedMode}** và được cấp role thành công!`, components: [] });
+                        await interaction.update({ content: '✅ Đã chọn mode thành công và được cấp role!', components: [] });
                     } catch (e) {
-                        await interaction.update({ content: `⚠️ Đã chọn **${selected
+                        await interaction.update({ content: '⚠️ Đã chọn mode thành công, nhưng bot thiếu
+                        
