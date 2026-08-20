@@ -22,12 +22,43 @@ const commands = [
     new SlashCommandBuilder().setName('taorolexacminh').setDescription('Tự động tạo Role xác minh').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('taoroletestermode').setDescription('Tự động tạo các role Tester').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('taorolehethong').setDescription('Tự động tạo role hệ thống').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    
     new SlashCommandBuilder().setName('queue').setDescription('Mở hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() })))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('closequeue').setDescription('Đóng hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() })))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    
+    // Lệnh thêm Tester vào Queue
+    new SlashCommandBuilder().setName('addtester')
+        .setDescription('Thêm một Tester vào hàng đợi Queue theo mode')
+        .addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() }))))
+        .addUserOption(opt => opt.setName('tester').setDescription('Tester cần thêm vào hàng đợi').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+
     new SlashCommandBuilder().setName('tophopvanill').setDescription('Xem danh sách tổng hợp'),
     new SlashCommandBuilder().setName('taotick').setDescription('Tạo channel ticket').addUserOption(opt => opt.setName('player').setDescription('Người chơi').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
     new SlashCommandBuilder().setName('dongtick').setDescription('Đóng ticket').setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
-    new SlashCommandBuilder().setName('lenhang').setDescription('Cập nhật kết quả lên hạng').addUserOption(opt => opt.setName('player').setDescription('Player').setRequired(true)).addUserOption(opt => opt.setName('tester').setDescription('Tester').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).addStringOption(opt => opt.setName('rank').setDescription('Rank').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    
+    new SlashCommandBuilder().setName('lenhang')
+        .setDescription('Cập nhật kết quả lên hạng cho người chơi')
+        .addUserOption(opt => opt.setName('player').setDescription('Người chơi được test').setRequired(true))
+        .addUserOption(opt => opt.setName('tester').setDescription('Tester (Người kiểm tra)').setRequired(true))
+        .addStringOption(opt => opt.setName('ign').setDescription('Tên trong game (IGN Minecraft)').setRequired(true))
+        .addStringOption(opt => opt.setName('mode').setDescription('Chế độ chơi (Mode)').setRequired(true).addChoices(
+            { name: 'Sword', value: 'Sword' }, { name: 'SMP', value: 'SMP' },
+            { name: 'Vanilla', value: 'Vanilla' }, { name: 'NetheritePot', value: 'NetheritePot' },
+            { name: 'Axe', value: 'Axe' }, { name: 'Mace', value: 'Mace' },
+            { name: 'UHC', value: 'UHC' }, { name: 'DiamondPot', value: 'DiamondPot' }
+        ))
+        .addStringOption(opt => opt.setName('previous_rank').setDescription('Rank cũ (Trước khi test)').setRequired(true).addChoices(
+            { name: 'Unranked (Chưa có)', value: 'Unranked' },
+            { name: 'Low Tier 5', value: 'LT5' }, { name: 'Low Tier 4', value: 'LT4' }, { name: 'Low Tier 3', value: 'LT3' }, { name: 'Low Tier 2', value: 'LT2' }, { name: 'Low Tier 1', value: 'LT1' },
+            { name: 'High Tier 5', value: 'HT5' }, { name: 'High Tier 4', value: 'HT4' }, { name: 'High Tier 3', value: 'HT3' }, { name: 'High Tier 2', value: 'HT2' }, { name: 'High Tier 1', value: 'HT1' }
+        ))
+        .addStringOption(opt => opt.setName('rank').setDescription('Rank mới (Rank đạt được)').setRequired(true).addChoices(
+            { name: 'Low Tier 5', value: 'LT5' }, { name: 'Low Tier 4', value: 'LT4' }, { name: 'Low Tier 3', value: 'LT3' }, { name: 'Low Tier 2', value: 'LT2' }, { name: 'Low Tier 1', value: 'LT1' },
+            { name: 'High Tier 5', value: 'HT5' }, { name: 'High Tier 4', value: 'HT4' }, { name: 'High Tier 3', value: 'HT3' }, { name: 'High Tier 2', value: 'HT2' }, { name: 'High Tier 1', value: 'HT1' }
+        ))
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+
     new SlashCommandBuilder().setName('ban').setDescription('Cấm người chơi').addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('li_do').setDescription('Lý do').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
     new SlashCommandBuilder().setName('win').setDescription('Ghi nhận tỉ số').addUserOption(opt => opt.setName('tester').setDescription('Tester').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('ti_so').setDescription('Tỉ số').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
 ].map(cmd => cmd.toJSON());
@@ -104,6 +135,25 @@ client.on(Events.InteractionCreate, async interaction => {
                 ) : null;
                 const msg = await interaction.reply({ embeds: [embed], components: row ? [row] : [], fetchReply: true });
                 qObj.messageId = msg.id;
+            } else if (commandName === 'addtester') {
+                const modeLower = interaction.options.getString('mode');
+                const testerUser = interaction.options.getUser('tester');
+                const matched = MODE_LIST.find(m => m.toLowerCase() === modeLower);
+                const qObj = queues[modeLower];
+
+                if (!qObj.testers.includes(testerUser.id)) {
+                    qObj.testers.push(testerUser.id);
+                }
+
+                if (qObj.messageId && qObj.channelId) {
+                    try {
+                        const ch = await interaction.guild.channels.fetch(qObj.channelId);
+                        const msg = await ch.messages.fetch(qObj.messageId);
+                        await msg.edit({ embeds: [buildQueueEmbed(matched, qObj)] });
+                    } catch (e) {}
+                }
+
+                await interaction.reply({ content: `Đã thêm <@${testerUser.id}> vào danh sách Tester của mode **${matched}**!`, ephemeral: true });
             } else if (commandName === 'taotick') {
                 const player = interaction.options.getUser('player');
                 const mode = interaction.options.getString('mode');
@@ -123,10 +173,43 @@ client.on(Events.InteractionCreate, async interaction => {
                 setTimeout(() => interaction.channel.delete().catch(()=>{}), 3000);
             } else if (commandName === 'lenhang') {
                 const player = interaction.options.getUser('player');
-                const rank = interaction.options.getString('rank');
-                await interaction.reply({ embeds: [new EmbedBuilder().setColor('#3498DB').setTitle('🏆 Cập Nhật Lên Hạng').setDescription(`Player: <@${player.id}>\nRank: ${rank}`)] });
-                const rGive = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === rank.toLowerCase());
-                if (rGive) { try { (await interaction.guild.members.fetch(player.id)).roles.add(rGive); } catch(e){} }
+                const tester = interaction.options.getUser('tester');
+                const ign = interaction.options.getString('ign');
+                const mode = interaction.options.getString('mode');
+                const prevRankCode = interaction.options.getString('previous_rank');
+                const rankCode = interaction.options.getString('rank');
+
+                const getRankFullName = (code) => {
+                    if (code === 'Unranked') return 'Unranked';
+                    if (code.startsWith('LT')) return `Low Tier ${code.replace('LT', '')}`;
+                    if (code.startsWith('HT')) return `High Tier ${code.replace('HT', '')}`;
+                    return code;
+                };
+
+                const modeEmojis = {
+                    'Sword': '⚔️', 'SMP': '🌍', 'Vanilla': '🌿', 'NetheritePot': '🧪',
+                    'Axe': '🪓', 'Mace': '🔨', 'UHC': '❤️', 'DiamondPot': '💎'
+                };
+
+                const embed = new EmbedBuilder()
+                    .setColor('#FFFFFF')
+                    .setAuthor({ name: `${ign}'s Test Results 🏆`, iconURL: player.displayAvatarURL({ dynamic: true }) })
+                    .setThumbnail(`https://minotar.net/armor/bust/${ign}/100.png`)
+                    .setDescription(`**Tester**\n<@${tester.id}>\n\n**Username**\n${ign}\n\n**Mode**\n${modeEmojis[mode] || '🎮'} ${mode}\n\n**Previous Rank**\n${getRankFullName(prevRankCode)}\n\n**Rank Earned**\n${getRankFullName(rankCode)}`);
+
+                await interaction.reply({ embeds: [embed] });
+
+                const rGive = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === rankCode.toLowerCase());
+                if (rGive) { 
+                    try { 
+                        const member = await interaction.guild.members.fetch(player.id);
+                        await member.roles.add(rGive); 
+                        if (prevRankCode !== 'Unranked') {
+                            const rRemove = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === prevRankCode.toLowerCase());
+                            if (rRemove && rRemove.id !== rGive.id) await member.roles.remove(rRemove);
+                        }
+                    } catch(e) { console.error("Lỗi cấp role:", e); } 
+                }
             } else {
                 await interaction.reply({ content: 'Thực hiện thành công!', ephemeral: true });
             }
@@ -167,4 +250,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
-                
+
