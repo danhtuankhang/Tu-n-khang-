@@ -35,7 +35,6 @@ const commands = [
     new SlashCommandBuilder().setName('taoroletestermode').setDescription('Tự động tạo các role [Mode] Tester màu tím').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('taorolehethong').setDescription('Tự động tạo role Tester, Player và các Rank lên hạng màu tím').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     
-    // Lệnh /queue có danh sách lựa chọn mode trực quan
     new SlashCommandBuilder().setName('queue')
         .setDescription('Mở hàng đợi Queue theo mode')
         .addStringOption(opt => 
@@ -54,7 +53,6 @@ const commands = [
                ))
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
-    // Lệnh /closequeue có danh sách lựa chọn mode trực quan
     new SlashCommandBuilder().setName('closequeue')
         .setDescription('Đóng hàng đợi Queue theo mode')
         .addStringOption(opt => 
@@ -190,15 +188,12 @@ client.on(Events.InteractionCreate, async interaction => {
                 const matchedMode = MODE_LIST.find(m => m.toLowerCase() === modeLower);
                 const qObj = queues[modeLower];
 
-                // Nếu đã có tin nhắn queue/close trước đó, tự động xóa đi
                 if (qObj.messageId && qObj.channelId) {
                     try {
                         const oldChannel = await interaction.guild.channels.fetch(qObj.channelId);
                         const oldMsg = await oldChannel.messages.fetch(qObj.messageId);
                         await oldMsg.delete();
-                    } catch (e) {
-                        // Bỏ qua nếu không tìm thấy tin nhắn cũ
-                    }
+                    } catch (e) {}
                 }
 
                 qObj.isOpen = true;
@@ -218,20 +213,16 @@ client.on(Events.InteractionCreate, async interaction => {
                 const matchedMode = MODE_LIST.find(m => m.toLowerCase() === modeLower);
                 const qObj = queues[modeLower];
 
-                // Xóa tin nhắn queue đang mở (nếu có) trước khi gửi bảng đóng
                 if (qObj.messageId && qObj.channelId) {
                     try {
                         const oldChannel = await interaction.guild.channels.fetch(qObj.channelId);
                         const oldMsg = await oldChannel.messages.fetch(qObj.messageId);
                         await oldMsg.delete();
-                    } catch (e) {
-                        // Bỏ qua nếu không tìm thấy
-                    }
+                    } catch (e) {}
                 }
 
                 qObj.isOpen = false;
 
-                // Tạo bảng thông báo đóng giống như hình mẫu bạn cung cấp
                 const closedEmbed = new EmbedBuilder()
                     .setColor('#FF0000')
                     .setTitle(`No Testers Online ${matchedMode}`)
@@ -239,8 +230,6 @@ client.on(Events.InteractionCreate, async interaction => {
                     .setFooter({ text: `Last testing session: ${new Date().toLocaleString('vi-VN')}` });
 
                 const msg = await interaction.reply({ embeds: [closedEmbed], fetchReply: true });
-                
-                // Lưu lại ID của thông báo đóng để lần sau mở queue mới sẽ xóa bảng đóng này đi
                 qObj.messageId = msg.id;
                 qObj.channelId = interaction.channelId;
             }
@@ -354,4 +343,15 @@ client.on(Events.InteractionCreate, async interaction => {
                 const member = interaction.member;
 
                 let role = guild.roles.cache.find(r => r.name === selectedMode);
-            
+                if (!role) {
+                    try {
+                        role = await guild.roles.create({ name: selectedMode, color: '#9B59B6', reason: 'Tự động tạo role mode' });
+                    } catch (e) { console.error(e); }
+                }
+
+                if (role) {
+                    try {
+                        await member.roles.add(role);
+                        await interaction.update({ content: `✅ Đã chọn mode **${selectedMode}** và được cấp role thành công!`, components: [] });
+                    } catch (e) {
+                        await interaction.update({ content: `⚠️ Đã chọn **${selected
