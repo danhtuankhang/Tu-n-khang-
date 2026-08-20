@@ -222,7 +222,7 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ embeds: [embed], components: [row] });
         }
 
-        // /taorolexacminh (Tạo tất cả role cần thiết tự động)
+        // /taorolexacminh
         else if (commandName === 'taorolexacminh') {
             try {
                 const rolesToCreate = ['Verified', 'Vanilla', 'Sword', 'SMP', 'Mace', 'Axe', 'UHC', 'DiamondPot', 'NetheritePot'];
@@ -232,13 +232,12 @@ client.on('interactionCreate', async interaction => {
                         await interaction.guild.roles.create({ name: rName, color: '#3498DB', reason: 'Tự động tạo role hệ thống test' });
                     }
                 }
-                await interaction.reply({ content: '✅ Đã tạo tất cả các Role xác minh và các Mode thành công!', ephemeral: true });
+                await interaction.reply({ content: '✅ Đã tạo tất cả các Role xác minh và các Mode thành công!', flags: 64 });
             } catch (e) {
-                await interaction.reply({ content: `❌ Lỗi: ${e.message}`, ephemeral: true });
+                await interaction.reply({ content: `❌ Lỗi: ${e.message}`, flags: 64 });
             }
         }
 
-        // Các lệnh queue, win, ban, lenhang, ticket giữ nguyên...
         else if (commandName === 'queuevanilla') {
             queueVanilla.isOpen = true;
             queueVanilla.players = [];
@@ -269,7 +268,7 @@ client.on('interactionCreate', async interaction => {
 
         else if (commandName === 'queuekomo') {
             if (!queueVanilla.isOpen) {
-                return await interaction.reply({ content: '❌ Queue Vanilla hiện tại chưa mở!', ephemeral: true });
+                return await interaction.reply({ content: '❌ Queue Vanilla hiện tại chưa mở!', flags: 64 });
             }
 
             queueVanilla.isOpen = false;
@@ -283,7 +282,7 @@ client.on('interactionCreate', async interaction => {
                 }
             } catch (e) { console.error(e); }
 
-            await interaction.reply({ content: '🛑 Đã đóng Queue thành công!', ephemeral: true });
+            await interaction.reply({ content: '🛑 Đã đóng Queue thành công!', flags: 64 });
             await sendClosedEmbed(interaction.channel);
         }
 
@@ -297,7 +296,7 @@ client.on('interactionCreate', async interaction => {
                 .setTitle('📋 Danh sách tổng hợp người đã Join Queue Vanilla')
                 .setDescription(list);
 
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            await interaction.reply({ embeds: [embed], flags: 64 });
         }
 
         else if (commandName === 'ticketvanilla') {
@@ -317,7 +316,7 @@ client.on('interactionCreate', async interaction => {
                 content: `👋 Chào mừng ${player} và Tester ${interaction.user}!\nKênh riêng dùng để tiến hành test Vanilla.`
             });
 
-            await interaction.reply({ content: `✅ Đã tạo kênh test riêng: ${ticketChannel}`, ephemeral: true });
+            await interaction.reply({ content: `✅ Đã tạo kênh test riêng: ${ticketChannel}`, flags: 64 });
         }
 
         else if (commandName === 'dongtick') {
@@ -440,10 +439,12 @@ client.on('interactionCreate', async interaction => {
         }
 
         else if (interaction.customId === 'btn_waitlist') {
-            await interaction.reply({ content: '⏳ Bạn đã được thêm vào danh sách chờ (Waitlist) thành công!', ephemeral: true });
+            await interaction.reply({ content: '⏳ Bạn đã được thêm vào danh sách chờ (Waitlist) thành công!', flags: 64 });
         }
 
         else if (interaction.customId === 'btn_join_queue') {
             if (!queueVanilla.isOpen) {
-                return await interaction.reply({ content: '❌ Hàng đợi đã đóng!', ephemeral: true });
-                       
+                return await interaction.reply({ content: '❌ Hàng đợi đã đóng!', flags: 64 });
+            }
+            if (queueVanilla.players.includes(interaction.user.id)) {
+                return await interaction.reply({ content: '⚠️ Bạn đ
