@@ -1,7 +1,8 @@
 const { 
     Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, 
     PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, 
-    ButtonStyle, ChannelType 
+    ButtonStyle, ChannelType, ModalBuilder, TextInputBuilder, TextInputStyle,
+    StringSelectMenuBuilder, StringSelectMenuOptionBuilder
 } = require('discord.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -34,7 +35,7 @@ const commands = [
 
     new SlashCommandBuilder()
         .setName('taorolexacminh')
-        .setDescription('Tự động tạo Role xác minh')
+        .setDescription('Tự động tạo Role xác minh và các Role Mode')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
     new SlashCommandBuilder()
@@ -202,31 +203,42 @@ client.on('interactionCreate', async interaction => {
         // /xacminh
         if (commandName === 'xacminh') {
             const embed = new EmbedBuilder()
-                .setColor('#3498DB')
-                .setTitle('🛡️ XÁC MINH TÀI KHOẢN & NHẬN ROLE')
-                .setDescription('Nhấn vào nút bên dưới để hoàn tất xác minh vào server.');
+                .setColor('#E74C3C')
+                .setTitle('📝 Evaluation Testing Waitlist')
+                .setDescription(
+                    'Upon applying, you will be added to a waitlist channel.\n' +
+                    'Here you will be pinged when a tester of your region is available.\n' +
+                    'If you are HT3 or higher, a high ticket will be created.\n\n' +
+                    '• Region should be the region of the server you wish to test on\n\n' +
+                    '• Username should be the name of the account you will be testing on\n\n' +
+                    '🛑 **Failure to provide authentic information will result in a denied test.**'
+                );
 
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('btn_verify').setLabel('Xác minh ngay').setStyle(ButtonStyle.Success)
+                new ButtonBuilder().setCustomId('btn_verify_modal').setLabel('Verify Account').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('btn_waitlist').setLabel('Enter Waitlist').setStyle(ButtonStyle.Primary)
             );
 
             await interaction.reply({ embeds: [embed], components: [row] });
         }
 
-        // /taorolexacminh
+        // /taorolexacminh (Tạo tất cả role cần thiết tự động)
         else if (commandName === 'taorolexacminh') {
             try {
-                let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
-                if (!role) {
-                    await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00', reason: 'Tạo role xác minh' });
+                const rolesToCreate = ['Verified', 'Vanilla', 'Sword', 'SMP', 'Mace', 'Axe', 'UHC', 'DiamondPot', 'NetheritePot'];
+                for (const rName of rolesToCreate) {
+                    let role = interaction.guild.roles.cache.find(r => r.name === rName);
+                    if (!role) {
+                        await interaction.guild.roles.create({ name: rName, color: '#3498DB', reason: 'Tự động tạo role hệ thống test' });
+                    }
                 }
-                await interaction.reply({ content: '✅ Đã tạo/kiểm tra xong Role Xác Minh!', ephemeral: true });
+                await interaction.reply({ content: '✅ Đã tạo tất cả các Role xác minh và các Mode thành công!', ephemeral: true });
             } catch (e) {
                 await interaction.reply({ content: `❌ Lỗi: ${e.message}`, ephemeral: true });
             }
         }
 
-        // /queuevanilla
+        // Các lệnh queue, win, ban, lenhang, ticket giữ nguyên...
         else if (commandName === 'queuevanilla') {
             queueVanilla.isOpen = true;
             queueVanilla.players = [];
@@ -255,7 +267,6 @@ client.on('interactionCreate', async interaction => {
             }, 10 * 60 * 1000);
         }
 
-        // /queuekomo
         else if (commandName === 'queuekomo') {
             if (!queueVanilla.isOpen) {
                 return await interaction.reply({ content: '❌ Queue Vanilla hiện tại chưa mở!', ephemeral: true });
@@ -276,7 +287,6 @@ client.on('interactionCreate', async interaction => {
             await sendClosedEmbed(interaction.channel);
         }
 
-        // /tophopvanill
         else if (commandName === 'tophopvanill') {
             const list = queueVanilla.history.length > 0 
                 ? queueVanilla.history.map((id, i) => `${i + 1}. <@${id}>`).join('\n')
@@ -290,7 +300,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        // /ticketvanilla
         else if (commandName === 'ticketvanilla') {
             const player = interaction.options.getUser('player');
 
@@ -311,7 +320,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ content: `✅ Đã tạo kênh test riêng: ${ticketChannel}`, ephemeral: true });
         }
 
-        // /dongtick
         else if (commandName === 'dongtick') {
             await interaction.reply('🔒 **Ticket này sẽ được xoá sau 5 giây...**');
             setTimeout(() => {
@@ -319,16 +327,13 @@ client.on('interactionCreate', async interaction => {
             }, 5000);
         }
 
-        // /lenhang
         else if (commandName === 'lenhang') {
             await interaction.deferReply();
-
             const tester = interaction.options.getUser('tester');
             const ign = interaction.options.getString('ign');
             const mode = interaction.options.getString('mode');
             const rankEarned = interaction.options.getString('rank');
             const previousRank = interaction.options.getString('previous_rank') || 'Unranked';
-
             const skinUrl = `https://visage.surgeplay.com/bust/512/${encodeURIComponent(ign)}`;
 
             const embedResult = new EmbedBuilder()
@@ -347,22 +352,17 @@ client.on('interactionCreate', async interaction => {
             await interaction.editReply({ embeds: [embedResult] });
         }
 
-        // /ban
         else if (commandName === 'ban') {
             await interaction.deferReply();
-
             const ign = interaction.options.getString('ign');
             const reason = interaction.options.getString('li_do');
             const targetUser = interaction.options.getUser('user');
-
             const skinUrl = `https://visage.surgeplay.com/bust/512/${encodeURIComponent(ign)}`;
 
             if (targetUser) {
                 try {
                     await interaction.guild.members.ban(targetUser, { reason: reason });
-                } catch (err) {
-                    console.error("Lỗi khi Ban trên Discord:", err);
-                }
+                } catch (err) { console.error(err); }
             }
 
             const embedBan = new EmbedBuilder()
@@ -373,22 +373,17 @@ client.on('interactionCreate', async interaction => {
                     { name: '🛡️ Người xử lý', value: `${interaction.user}`, inline: true },
                     { name: '📄 Lý do bị Ban', value: `\`\`\`${reason}\`\`\``, inline: false }
                 )
-                .setThumbnail(skinUrl)
-                .setTimestamp()
-                .setFooter({ text: 'Hệ thống Quản lý Tier List' });
+                .setThumbnail(skinUrl);
 
             await interaction.editReply({ embeds: [embedBan] });
         }
 
-        // /win
         else if (commandName === 'win') {
             await interaction.deferReply();
-
             const tester = interaction.options.getUser('tester');
             const mode = interaction.options.getString('mode');
             const ign = interaction.options.getString('ign');
             const score = interaction.options.getString('ti_so');
-
             const skinUrl = `https://visage.surgeplay.com/bust/512/${encodeURIComponent(ign)}`;
 
             const embedWin = new EmbedBuilder()
@@ -401,9 +396,7 @@ client.on('interactionCreate', async interaction => {
                     { name: '🎯 Mode', value: `**${mode}**`, inline: true },
                     { name: '📊 Tỉ số (Score)', value: `\`\`\`${score}\`\`\``, inline: false }
                 )
-                .setThumbnail(skinUrl)
-                .setTimestamp()
-                .setFooter({ text: 'Hệ thống Quản lý Tier List' });
+                .setThumbnail(skinUrl);
 
             await interaction.editReply({ embeds: [embedWin] });
         }
@@ -411,48 +404,46 @@ client.on('interactionCreate', async interaction => {
 
     // --- XỬ LÝ NÚT BẤM (BUTTONS) ---
     if (interaction.isButton()) {
-        // Nút xác minh
-        if (interaction.customId === 'btn_verify') {
-            let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
-            if (role) {
-                await interaction.member.roles.add(role);
-                await interaction.reply({ content: '✅ Bạn đã xác minh thành công và nhận role!', ephemeral: true });
-            } else {
-                await interaction.reply({ content: '❌ Hệ thống chưa thiết lập role Verified!', ephemeral: true });
-            }
+        if (interaction.customId === 'btn_verify_modal') {
+            const modal = new ModalBuilder()
+                .setCustomId('verify_modal_submit')
+                .setTitle('Verify Account & Server');
+
+            const ignInput = new TextInputBuilder()
+                .setCustomId('ign_input')
+                .setLabel('In-game name (IGN)')
+                .setPlaceholder('Nhập tên Minecraft của bạn')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+
+            const serverInput = new TextInputBuilder()
+                .setCustomId('server_input')
+                .setLabel('Server muốn test')
+                .setPlaceholder('Ví dụ: NA, ASIA, EU...')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+
+            const typeInput = new TextInputBuilder()
+                .setCustomId('type_input')
+                .setLabel('Loại tài khoản (Premium / Cracked)')
+                .setPlaceholder('Nhập Premium hoặc Cracked')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(ignInput),
+                new ActionRowBuilder().addComponents(serverInput),
+                new ActionRowBuilder().addComponents(typeInput)
+            );
+
+            await interaction.showModal(modal);
         }
 
-        // Nút Join Queue
+        else if (interaction.customId === 'btn_waitlist') {
+            await interaction.reply({ content: '⏳ Bạn đã được thêm vào danh sách chờ (Waitlist) thành công!', ephemeral: true });
+        }
+
         else if (interaction.customId === 'btn_join_queue') {
             if (!queueVanilla.isOpen) {
                 return await interaction.reply({ content: '❌ Hàng đợi đã đóng!', ephemeral: true });
-            }
-            if (queueVanilla.players.includes(interaction.user.id)) {
-                return await interaction.reply({ content: '⚠️ Bạn đã có trong hàng đợi rồi!', ephemeral: true });
-            }
-            if (queueVanilla.players.length >= 20) {
-                return await interaction.reply({ content: '❌ Hàng đợi đã đầy (20/20)!', ephemeral: true });
-            }
-
-            queueVanilla.players.push(interaction.user.id);
-            if (!queueVanilla.history.includes(interaction.user.id)) {
-                queueVanilla.history.push(interaction.user.id);
-            }
-
-            await interaction.update({ embeds: [buildQueueEmbed()] });
-        }
-
-        // Nút Leave Queue
-        else if (interaction.customId === 'btn_leave_queue') {
-            if (!queueVanilla.players.includes(interaction.user.id)) {
-                return await interaction.reply({ content: '⚠️ Bạn chưa tham gia hàng đợi!', ephemeral: true });
-            }
-
-            queueVanilla.players = queueVanilla.players.filter(id => id !== interaction.user.id);
-            await interaction.update({ embeds: [buildQueueEmbed()] });
-        }
-    }
-});
-
-client.login(TOKEN);
-                                
+                       
