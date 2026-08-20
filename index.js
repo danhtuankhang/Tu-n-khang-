@@ -22,8 +22,8 @@ const commands = [
     new SlashCommandBuilder().setName('taorolexacminh').setDescription('Tự động tạo Role xác minh').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('taoroletestermode').setDescription('Tự động tạo các role Tester').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('taorolehethong').setDescription('Tự động tạo role hệ thống').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-    new SlashCommandBuilder().setName('queue').setDescription('Mở hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.m => ({ name: m, value: m.toLowerCase() }))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-    new SlashCommandBuilder().setName('closequeue').setDescription('Đóng hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.m => ({ name: m, value: m.toLowerCase() }))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    new SlashCommandBuilder().setName('queue').setDescription('Mở hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() })))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    new SlashCommandBuilder().setName('closequeue').setDescription('Đóng hàng đợi Queue').addStringOption(opt => opt.setName('mode').setDescription('Chọn mode').setRequired(true).addChoices(...MODE_LIST.map(m => ({ name: m, value: m.toLowerCase() })))).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
     new SlashCommandBuilder().setName('tophopvanill').setDescription('Xem danh sách tổng hợp'),
     new SlashCommandBuilder().setName('taotick').setDescription('Tạo channel ticket').addUserOption(opt => opt.setName('player').setDescription('Người chơi').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
     new SlashCommandBuilder().setName('dongtick').setDescription('Đóng ticket').setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
@@ -167,4 +167,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
-                                                                      
+                
