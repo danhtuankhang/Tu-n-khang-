@@ -1,7 +1,8 @@
 const { 
     Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, 
     PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, 
-    ButtonStyle, ChannelType, ModalBuilder, TextInputBuilder, TextInputStyle 
+    ButtonStyle, ChannelType, ModalBuilder, TextInputBuilder, TextInputStyle,
+    Events 
 } = require('discord.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -134,13 +135,13 @@ const commands = [
 
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 
-client.once('ready', async () => {
+client.once(Events.ClientReady, async () => {
     console.log(`✅ Bot ${client.user.tag} đã online!`);
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
 });
 
 // --- 2. TỰ ĐỘNG CẤP ROLE MEMBRE KHI CÓ THÀNH VIÊN MỚI ---
-client.on('guildMemberAdd', async member => {
+client.on(Events.GuildMemberAdd, async member => {
     try {
         let role = member.guild.roles.cache.find(r => r.name === 'Membre');
         if (!role) {
@@ -194,12 +195,11 @@ function buildQueueEmbed() {
 }
 
 // --- 5. XỬ LÝ TƯƠNG TÁC VÀ LỆNH ---
-client.on('interactionCreate', async interaction => {
+client.on(Events.InteractionCreate, async interaction => {
 
     if (interaction.isChatInputCommand()) {
         const { commandName } = interaction;
 
-        // /xacminh (Gửi bảng giao diện xác minh kèm nút Verify Account)
         if (commandName === 'xacminh') {
             const embed = new EmbedBuilder()
                 .setColor('#DC143C')
@@ -223,7 +223,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ embeds: [embed], components: [row] });
         }
 
-        // /taorolexacminh
         else if (commandName === 'taorolexacminh') {
             try {
                 let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
@@ -236,7 +235,6 @@ client.on('interactionCreate', async interaction => {
             }
         }
 
-        // /queuevanilla
         else if (commandName === 'queuevanilla') {
             queueVanilla.isOpen = true;
             queueVanilla.players = [];
@@ -265,7 +263,6 @@ client.on('interactionCreate', async interaction => {
             }, 10 * 60 * 1000);
         }
 
-        // /queuekomo
         else if (commandName === 'queuekomo') {
             if (!queueVanilla.isOpen) {
                 return await interaction.reply({ content: '❌ Queue Vanilla hiện tại chưa mở!', ephemeral: true });
@@ -286,7 +283,6 @@ client.on('interactionCreate', async interaction => {
             await sendClosedEmbed(interaction.channel);
         }
 
-        // /tophopvanill
         else if (commandName === 'tophopvanill') {
             const list = queueVanilla.history.length > 0 
                 ? queueVanilla.history.map((id, i) => `${i + 1}. <@${id}>`).join('\n')
@@ -300,7 +296,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        // /ticketvanilla
         else if (commandName === 'ticketvanilla') {
             const player = interaction.options.getUser('player');
 
@@ -321,7 +316,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ content: `✅ Đã tạo kênh test riêng: ${ticketChannel}`, ephemeral: true });
         }
 
-        // /dongtick
         else if (commandName === 'dongtick') {
             await interaction.reply('🔒 **Ticket này sẽ được xoá sau 5 giây...**');
             setTimeout(() => {
@@ -329,7 +323,6 @@ client.on('interactionCreate', async interaction => {
             }, 5000);
         }
 
-        // /lenhang
         else if (commandName === 'lenhang') {
             await interaction.deferReply();
 
@@ -357,7 +350,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.editReply({ embeds: [embedResult] });
         }
 
-        // /ban
         else if (commandName === 'ban') {
             await interaction.deferReply();
 
@@ -390,7 +382,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.editReply({ embeds: [embedBan] });
         }
 
-        // /win
         else if (commandName === 'win') {
             await interaction.deferReply();
 
@@ -421,7 +412,6 @@ client.on('interactionCreate', async interaction => {
 
     // --- XỬ LÝ NÚT BẤM (BUTTONS) ---
     if (interaction.isButton()) {
-        // Mở Modal Xác Minh khi bấm nút Verify Account
         if (interaction.customId === 'btn_open_verify_modal') {
             const modal = new ModalBuilder()
                 .setCustomId('verify_modal')
@@ -457,10 +447,15 @@ client.on('interactionCreate', async interaction => {
             await interaction.showModal(modal);
         }
 
-        // Nút Join Queue
         else if (interaction.customId === 'btn_join_queue') {
             if (!queueVanilla.isOpen) {
                 return await interaction.reply({ content: '❌ Hàng đợi đã đóng!', ephemeral: true });
             }
             if (queueVanilla.players.includes(interaction.user.id)) {
-                return await
+                return await interaction.reply({ content: '⚠️ Bạn đã có trong hàng đợi rồi!', ephemeral: true });
+            }
+            if (queueVanilla.players.length >= 20) {
+                return await interaction.reply({ content: '❌ Hàng đợi đã đầy (20/20)!', ephemeral: true });
+            }
+
+            queueVanilla.players.push(intera
