@@ -26,6 +26,7 @@ let queueVanilla = {
     history: []
 };
 
+// --- ĐĂNG KÝ LỆNH ĐÃ ĐƯỢC LÀM GỌN VÀ CHUẨN XÁC ---
 const commands = [
     new SlashCommandBuilder().setName('xacminh').setDescription('Gửi bảng xác minh role').setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder().setName('taorolexacminh').setDescription('Tự động tạo Role xác minh').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
@@ -34,9 +35,9 @@ const commands = [
     new SlashCommandBuilder().setName('tophopvanill').setDescription('Xem danh sách tổng hợp'),
     new SlashCommandBuilder().setName('ticketvanilla').setDescription('Tạo channel ticket').addUserOption(opt => opt.setName('player').setDescription('Người chơi').setRequired(true)),
     new SlashCommandBuilder().setName('dongtick').setDescription('Đóng ticket'),
-    new SlashCommandBuilder().setName('lenhang').setDescription('Cập nhật kết quả').addUserOption(opt => opt.setName('tester').setRequired(true)).addStringOption(opt => opt.setName('ign').setRequired(true)).addStringOption(opt => opt.setName('mode').setRequired(true)).addStringOption(opt => opt.setName('rank').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-    new SlashCommandBuilder().setName('ban').setDescription('Cấm người chơi').addStringOption(opt => opt.setName('ign').setRequired(true)).addStringOption(opt => opt.setName('li_do').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
-    new SlashCommandBuilder().setName('win').setDescription('Ghi nhận tỉ số').addUserOption(opt => opt.setName('tester').setRequired(true)).addStringOption(opt => opt.setName('mode').setRequired(true)).addStringOption(opt => opt.setName('ign').setRequired(true)).addStringOption(opt => opt.setName('ti_so').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
+    new SlashCommandBuilder().setName('lenhang').setDescription('Cập nhật kết quả').addUserOption(opt => opt.setName('tester').setDescription('Tester').setRequired(true)).addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).addStringOption(opt => opt.setName('rank').setDescription('Rank').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    new SlashCommandBuilder().setName('ban').setDescription('Cấm người chơi').addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('li_do').setDescription('Lý do').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+    new SlashCommandBuilder().setName('win').setDescription('Ghi nhận tỉ số').addUserOption(opt => opt.setName('tester').setDescription('Tester').setRequired(true)).addStringOption(opt => opt.setName('mode').setDescription('Mode').setRequired(true)).addStringOption(opt => opt.setName('ign').setDescription('IGN').setRequired(true)).addStringOption(opt => opt.setName('ti_so').setDescription('Tỉ số').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(TOKEN);
@@ -57,14 +58,6 @@ client.on(Events.GuildMemberAdd, async member => {
         console.error(error);
     }
 });
-
-async function sendClosedEmbed(channel) {
-    const embed = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle('No Testers Online Vanilla')
-        .setDescription('No testers for Vanilla are available at this time.\nYou will be pinged when a tester is available.');
-    return await channel.send({ embeds: [embed] });
-}
 
 function buildQueueEmbed() {
     const playerList = queueVanilla.players.length > 0 
@@ -153,3 +146,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.login(TOKEN);
+        
