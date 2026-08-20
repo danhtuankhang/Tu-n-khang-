@@ -94,12 +94,12 @@ const commands = [
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.once(Events.ClientReady, async () => {
-    console.log(`✅ Bot ${client.user.tag} đã online!`);
+    console.log(`Bot ${client.user.tag} da online!`);
     try {
         await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-        console.log('✅ Đã đồng bộ slash commands thành công!');
+        console.log('Da dong bộ slash commands thành công!');
     } catch (error) {
-        console.error('❌ Lỗi đồng bộ commands:', error);
+        console.error('Loi dong bo commands:', error);
     }
 });
 
@@ -111,7 +111,7 @@ client.on(Events.GuildMemberAdd, async member => {
         }
         await member.roles.add(role);
     } catch (error) {
-        console.error('Lỗi khi thêm role thành viên mới:', error);
+        console.error('Loi khi them role thành viên mới:', error);
     }
 });
 
@@ -149,9 +149,9 @@ client.on(Events.InteractionCreate, async interaction => {
             else if (commandName === 'taorolexacminh') {
                 let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
                 if (!role) {
-                    await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00', reason: 'Tạo role xác minh' });
+                    await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00', reason: 'Tao role xác minh' });
                 }
-                await interaction.reply({ content: '✅ Đã tạo/kiểm tra xong Role Verified!', ephemeral: true });
+                await interaction.reply({ content: 'Da tao/kiem tra xong Role Verified!', ephemeral: true });
             }
             else if (commandName === 'taoroletestermode') {
                 await interaction.deferReply({ ephemeral: true });
@@ -161,12 +161,12 @@ client.on(Events.InteractionCreate, async interaction => {
                     let existingRole = interaction.guild.roles.cache.find(r => r.name === roleName);
                     if (!existingRole) {
                         try {
-                            await interaction.guild.roles.create({ name: roleName, color: '#9B59B6', reason: 'Tạo role tester mode màu tím' });
+                            await interaction.guild.roles.create({ name: roleName, color: '#9B59B6', reason: 'Tao role tester mode' });
                             createdRoles.push(roleName);
                         } catch (err) { console.error(err); }
                     }
                 }
-                await interaction.editReply(`✅ Đã tạo các role Tester màu tím: ${createdRoles.length > 0 ? createdRoles.join(', ') : 'Đã tồn tại từ trước!'}`);
+                await interaction.editReply(`Da tao các role Tester: ${createdRoles.length > 0 ? createdRoles.join(', ') : 'Da ton tai!'}`);
             }
             else if (commandName === 'taorolehethong') {
                 await interaction.deferReply({ ephemeral: true });
@@ -176,12 +176,12 @@ client.on(Events.InteractionCreate, async interaction => {
                     let existing = interaction.guild.roles.cache.find(r => r.name === rName);
                     if (!existing) {
                         try {
-                            await interaction.guild.roles.create({ name: rName, color: '#9B59B6', reason: 'Tạo role hệ thống màu tím' });
+                            await interaction.guild.roles.create({ name: rName, color: '#9B59B6', reason: 'Tao role he thong' });
                             createdRoles.push(rName);
                         } catch (err) { console.error(err); }
                     }
                 }
-                await interaction.editReply(`✅ Đã tạo các role hệ thống màu tím: ${createdRoles.length > 0 ? createdRoles.join(', ') : 'Đã tồn tại từ trước!'}`);
+                await interaction.editReply(`Da tao các role he thong: ${createdRoles.length > 0 ? createdRoles.join(', ') : 'Da ton tai!'}`);
             }
             else if (commandName === 'queue') {
                 const modeLower = interaction.options.getString('mode');
@@ -227,7 +227,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     .setColor('#FF0000')
                     .setTitle(`No Testers Online ${matchedMode}`)
                     .setDescription(`No testers for ${matchedMode} are available at this time.\nYou will be pinged when a tester is available.\nCheck back later!`)
-                    .setFooter({ text: `Last testing session: ${new Date().toLocaleString('vi-VN')}` });
+                    .setFooter({ text: 'Queue closed' });
 
                 const msg = await interaction.reply({ embeds: [closedEmbed], fetchReply: true });
                 qObj.messageId = msg.id;
@@ -258,11 +258,11 @@ client.on(Events.InteractionCreate, async interaction => {
                     .setDescription(`Xin chào <@${player.id}> và <@${interaction.user.id}>!`);
 
                 await ticketChannel.send({ content: `<@${player.id}> <@${interaction.user.id}>`, embeds: [embed] });
-                await interaction.reply({ content: `✅ Đã tạo thành công ticket: <#${ticketChannel.id}>`, ephemeral: true });
+                await interaction.reply({ content: `Da tao ticket: <#${ticketChannel.id}>`, ephemeral: true });
             }
             else if (commandName === 'dongtick') {
                 const channel = interaction.channel;
-                await interaction.reply({ content: '🔒 Ticket sẽ được đóng sau 3 giây nữa...', ephemeral: true });
+                await interaction.reply({ content: 'Ticket sẽ được đóng sau 3 giây...', ephemeral: true });
                 setTimeout(() => channel.delete().catch(() => {}), 3000);
             }
             else if (commandName === 'lenhang') {
@@ -278,7 +278,7 @@ client.on(Events.InteractionCreate, async interaction => {
                         { name: '👤 Người chơi', value: `<@${player.id}>`, inline: true },
                         { name: '🛡️ Tester', value: `<@${tester.id}>`, inline: true },
                         { name: '⚔️ Mode', value: mode, inline: true },
-                        { name: '🎖️ Rank Đạt Được', value: rank, inline: true }
+                        { name: '🎖️ Rank', value: rank, inline: true }
                     );
 
                 await interaction.reply({ embeds: [embed] });
@@ -291,7 +291,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
             }
             else if (commandName === 'ban' || commandName === 'win') {
-                await interaction.reply({ content: '✅ Đã thực hiện lệnh thành công!', ephemeral: true });
+                await interaction.reply({ content: 'Thực hiện thành công!', ephemeral: true });
             }
         }
 
@@ -345,14 +345,20 @@ client.on(Events.InteractionCreate, async interaction => {
                 let role = guild.roles.cache.find(r => r.name === selectedMode);
                 if (!role) {
                     try {
-                        role = await guild.roles.create({ name: selectedMode, color: '#9B59B6', reason: 'Tự động tạo role mode' });
+                        role = await guild.roles.create({ name: selectedMode, color: '#9B59B6', reason: 'Tao role mode' });
                     } catch (e) { console.error(e); }
                 }
 
                 if (role) {
                     try {
                         await member.roles.add(role);
-                        await interaction.update({ content: '✅ Đã chọn mode thành công và được cấp role!', components: [] });
+                        await interaction.update({ content: 'Chon mode thanh cong và duoc cap role!', components: [] });
                     } catch (e) {
-                        await interaction.update({ content: '⚠️ Đã chọn mode thành công, nhưng bot thiếu
-                        
+                        await interaction.update({ content: 'Chon mode thanh cong, nhung bot thieu quyen cap role!', components: [] });
+                    }
+                }
+            }
+        }
+
+        if (interaction.isModalSubmit()) {
+            if (inter
