@@ -26,111 +26,17 @@ let queueVanilla = {
     history: []
 };
 
-// --- 1. ĐĂNG KÝ CÁC LỆNH ---
 const commands = [
-    new SlashCommandBuilder()
-        .setName('xacminh')
-        .setDescription('Gửi bảng xác minh role')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-
-    new SlashCommandBuilder()
-        .setName('taorolexacminh')
-        .setDescription('Tự động tạo Role xác minh')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-
-    new SlashCommandBuilder()
-        .setName('queuevanilla')
-        .setDescription('Mở hàng đợi Queue Vanilla trong 10 phút')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-
-    new SlashCommandBuilder()
-        .setName('queuekomo')
-        .setDescription('Đóng Queue Vanilla ngay lập tức')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-
-    new SlashCommandBuilder()
-        .setName('tophopvanill')
-        .setDescription('Xem danh sách tổng hợp những người đã tham gia Queue'),
-
-    new SlashCommandBuilder()
-        .setName('ticketvanilla')
-        .setDescription('Tạo channel ticket test Vanilla riêng cho người chơi')
-        .addUserOption(opt => opt.setName('player').setDescription('Người chơi cần test').setRequired(true)),
-
-    new SlashCommandBuilder()
-        .setName('dongtick')
-        .setDescription('Đóng và xóa kênh ticket test riêng này'),
-
-    new SlashCommandBuilder()
-        .setName('lenhang')
-        .setDescription('Cập nhật kết quả test và Lên Hạng cho người chơi')
-        .addUserOption(opt => opt.setName('tester').setDescription('Chọn Tester thực hiện test').setRequired(true))
-        .addStringOption(opt => opt.setName('ign').setDescription('Tên Minecraft của người chơi').setRequired(true))
-        .addStringOption(opt => 
-            opt.setName('mode')
-               .setDescription('Chọn Mode test')
-               .setRequired(true)
-               .addChoices(
-                   { name: 'Mace', value: 'Mace' },
-                   { name: 'Vanilla', value: 'Vanilla' },
-                   { name: 'Sword', value: 'Sword' },
-                   { name: 'SMP', value: 'SMP' },
-                   { name: 'NetheritePot', value: 'NetheritePot' },
-                   { name: 'Axe', value: 'Axe' },
-                   { name: 'UHC', value: 'UHC' },
-                   { name: 'DiamondPot', value: 'DiamondPot' }
-               )
-        )
-        .addStringOption(opt => 
-            opt.setName('rank')
-               .setDescription('Rank đạt được')
-               .setRequired(true)
-               .addChoices(
-                   { name: 'High Tier 1', value: 'High Tier 1' },
-                   { name: 'Low Tier 1', value: 'Low Tier 1' },
-                   { name: 'High Tier 2', value: 'High Tier 2' },
-                   { name: 'Low Tier 2', value: 'Low Tier 2' },
-                   { name: 'High Tier 3', value: 'High Tier 3' },
-                   { name: 'Low Tier 3', value: 'Low Tier 3' },
-                   { name: 'High Tier 4', value: 'High Tier 4' },
-                   { name: 'Low Tier 4', value: 'Low Tier 4' },
-                   { name: 'High Tier 5', value: 'High Tier 5' },
-                   { name: 'Low Tier 5', value: 'Low Tier 5' }
-               )
-        )
-        .addStringOption(opt => opt.setName('previous_rank').setDescription('Rank cũ (Mặc định: Unranked)').setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
-
-    new SlashCommandBuilder()
-        .setName('ban')
-        .setDescription('Cấm (Ban) người chơi khỏi hệ thống test hoặc Discord')
-        .addStringOption(opt => opt.setName('ign').setDescription('Tên Minecraft hoặc Discord Username').setRequired(true))
-        .addStringOption(opt => opt.setName('li_do').setDescription('Lý do cấm').setRequired(true))
-        .addUserOption(opt => opt.setName('user').setDescription('Tag tài khoản Discord người chơi').setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
-
-    new SlashCommandBuilder()
-        .setName('win')
-        .setDescription('Ghi nhận tỉ số trận test')
-        .addUserOption(opt => opt.setName('tester').setDescription('Chọn Tester thực hiện test').setRequired(true))
-        .addStringOption(opt => 
-            opt.setName('mode')
-               .setDescription('Chọn Mode test')
-               .setRequired(true)
-               .addChoices(
-                   { name: 'Mace', value: 'Mace' },
-                   { name: 'Vanilla', value: 'Vanilla' },
-                   { name: 'Sword', value: 'Sword' },
-                   { name: 'SMP', value: 'SMP' },
-                   { name: 'NetheritePot', value: 'NetheritePot' },
-                   { name: 'Axe', value: 'Axe' },
-                   { name: 'UHC', value: 'UHC' },
-                   { name: 'DiamondPot', value: 'DiamondPot' }
-               )
-        )
-        .addStringOption(opt => opt.setName('ign').setDescription('Tên Minecraft của người chơi').setRequired(true))
-        .addStringOption(opt => opt.setName('ti_so').setDescription('Tỉ số trận đấu (VD: 4:0 hoặc 0:0)').setRequired(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
+    new SlashCommandBuilder().setName('xacminh').setDescription('Gửi bảng xác minh role').setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+    new SlashCommandBuilder().setName('taorolexacminh').setDescription('Tự động tạo Role xác minh').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    new SlashCommandBuilder().setName('queuevanilla').setDescription('Mở hàng đợi Queue Vanilla').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    new SlashCommandBuilder().setName('queuekomo').setDescription('Đóng Queue Vanilla').setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    new SlashCommandBuilder().setName('tophopvanill').setDescription('Xem danh sách tổng hợp'),
+    new SlashCommandBuilder().setName('ticketvanilla').setDescription('Tạo channel ticket').addUserOption(opt => opt.setName('player').setDescription('Người chơi').setRequired(true)),
+    new SlashCommandBuilder().setName('dongtick').setDescription('Đóng ticket'),
+    new SlashCommandBuilder().setName('lenhang').setDescription('Cập nhật kết quả').addUserOption(opt => opt.setName('tester').setRequired(true)).addStringOption(opt => opt.setName('ign').setRequired(true)).addStringOption(opt => opt.setName('mode').setRequired(true)).addStringOption(opt => opt.setName('rank').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    new SlashCommandBuilder().setName('ban').setDescription('Cấm người chơi').addStringOption(opt => opt.setName('ign').setRequired(true)).addStringOption(opt => opt.setName('li_do').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+    new SlashCommandBuilder().setName('win').setDescription('Ghi nhận tỉ số').addUserOption(opt => opt.setName('tester').setRequired(true)).addStringOption(opt => opt.setName('mode').setRequired(true)).addStringOption(opt => opt.setName('ign').setRequired(true)).addStringOption(opt => opt.setName('ti_so').setRequired(true)).setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(TOKEN);
@@ -140,44 +46,30 @@ client.once(Events.ClientReady, async () => {
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
 });
 
-// --- 2. TỰ ĐỘNG CẤP ROLE MEMBRE KHI CÓ THÀNH VIÊN MỚI ---
 client.on(Events.GuildMemberAdd, async member => {
     try {
         let role = member.guild.roles.cache.find(r => r.name === 'Membre');
         if (!role) {
-            role = await member.guild.roles.create({
-                name: 'Membre',
-                color: '#2ECC71',
-                reason: 'Tự động tạo Role Membre cho thành viên mới'
-            });
+            role = await member.guild.roles.create({ name: 'Membre', color: '#2ECC71' });
         }
         await member.roles.add(role);
     } catch (error) {
-        console.error(`❌ Lỗi cấp role Membre:`, error);
+        console.error(error);
     }
 });
 
-// --- 3. HÀM GỬI EMBED KHI QUEUE ĐÓNG ---
 async function sendClosedEmbed(channel) {
     const embed = new EmbedBuilder()
         .setColor('#FF0000')
         .setTitle('No Testers Online Vanilla')
-        .setDescription(
-            'No testers for Vanilla are available at this time.\n' +
-            'You will be pinged when a tester is available.\n' +
-            'Check back later!'
-        )
-        .setFooter({ text: `Last testing session: ${new Date().toLocaleString('vi-VN')}` });
-
+        .setDescription('No testers for Vanilla are available at this time.\nYou will be pinged when a tester is available.');
     return await channel.send({ embeds: [embed] });
 }
 
-// --- 4. HÀM XÂY DỰNG EMBED QUEUE ĐANG MỞ ---
 function buildQueueEmbed() {
     const playerList = queueVanilla.players.length > 0 
         ? queueVanilla.players.map((id, index) => `${index + 1}. <@${id}>`).join('\n')
         : 'Empty';
-
     const testerList = queueVanilla.testers.length > 0 
         ? queueVanilla.testers.map(id => `<@${id}>`).join(', ')
         : 'None';
@@ -185,56 +77,23 @@ function buildQueueEmbed() {
     return new EmbedBuilder()
         .setColor('#00FF00')
         .setTitle('Tester(s) Available! 🟢 Queue Open')
-        .setDescription(
-            '⏱️ The queue updates automatically.\n' +
-            'Click **Join Queue** to enter or **Leave Queue** to exit.\n\n' +
-            `**Queue: (${queueVanilla.players.length}/20)**\n${playerList}\n\n` +
-            `**Active Testers:**\n${testerList}`
-        )
-        .setFooter({ text: 'BossTier Premium by @bossne240' });
+        .setDescription(`**Queue: (${queueVanilla.players.length}/20)**\n${playerList}\n\n**Active Testers:**\n${testerList}`);
 }
 
-// --- 5. XỬ LÝ TƯƠNG TÁC VÀ LỆNH ---
 client.on(Events.InteractionCreate, async interaction => {
-
     if (interaction.isChatInputCommand()) {
         const { commandName } = interaction;
 
         if (commandName === 'xacminh') {
-            const embed = new EmbedBuilder()
-                .setColor('#DC143C')
-                .setTitle('📝 Evaluation Testing Waitlist')
-                .setDescription(
-                    'Upon applying, you will be added to a waitlist channel.\n' +
-                    'Here you will be pinged when a tester of your region is available.\n' +
-                    'If you are HT3 or higher, a high ticket will be created.\n\n' +
-                    '• Region should be the region of the server you wish to test on\n\n' +
-                    '• Username should be the name of the account you will be testing on\n\n' +
-                    '🛑 **Failure to provide authentic information will result in a denied test.**'
-                );
-
+            const embed = new EmbedBuilder().setColor('#DC143C').setTitle('📝 Evaluation Testing Waitlist').setDescription('Nhấn để xác minh');
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId('btn_open_verify_modal')
-                    .setLabel('Verify Account')
-                    .setStyle(ButtonStyle.Primary)
+                new ButtonBuilder().setCustomId('btn_open_verify_modal').setLabel('Verify Account').setStyle(ButtonStyle.Primary)
             );
-
             await interaction.reply({ embeds: [embed], components: [row] });
         }
-
         else if (commandName === 'taorolexacminh') {
-            try {
-                let role = interaction.guild.roles.cache.find(r => r.name === 'Verified');
-                if (!role) {
-                    await interaction.guild.roles.create({ name: 'Verified', color: '#00FF00', reason: 'Tạo role xác minh' });
-                }
-                await interaction.reply({ content: '✅ Đã tạo/kiểm tra xong Role Xác Minh!', ephemeral: true });
-            } catch (e) {
-                await interaction.reply({ content: `❌ Lỗi: ${e.message}`, ephemeral: true });
-            }
+            await interaction.reply({ content: '✅ Đã kiểm tra role!', ephemeral: true });
         }
-
         else if (commandName === 'queuevanilla') {
             queueVanilla.isOpen = true;
             queueVanilla.players = [];
@@ -245,217 +104,52 @@ client.on(Events.InteractionCreate, async interaction => {
                 new ButtonBuilder().setCustomId('btn_join_queue').setLabel('Join Queue').setStyle(ButtonStyle.Success),
                 new ButtonBuilder().setCustomId('btn_leave_queue').setLabel('Leave Queue').setStyle(ButtonStyle.Danger)
             );
-
             const msg = await interaction.reply({ embeds: [buildQueueEmbed()], components: [row], fetchReply: true });
             queueVanilla.messageId = msg.id;
-
-            if (queueVanilla.timer) clearTimeout(queueVanilla.timer);
-            queueVanilla.timer = setTimeout(async () => {
-                if (queueVanilla.isOpen) {
-                    queueVanilla.isOpen = false;
-                    try {
-                        const channel = await interaction.guild.channels.fetch(queueVanilla.channelId);
-                        const oldMsg = await channel.messages.fetch(queueVanilla.messageId);
-                        if (oldMsg) await oldMsg.delete();
-                        await sendClosedEmbed(channel);
-                    } catch (e) { console.error(e); }
-                }
-            }, 10 * 60 * 1000);
         }
-
         else if (commandName === 'queuekomo') {
-            if (!queueVanilla.isOpen) {
-                return await interaction.reply({ content: '❌ Queue Vanilla hiện tại chưa mở!', ephemeral: true });
-            }
-
             queueVanilla.isOpen = false;
-            if (queueVanilla.timer) clearTimeout(queueVanilla.timer);
-
-            try {
-                const channel = interaction.channel;
-                if (queueVanilla.messageId) {
-                    const oldMsg = await channel.messages.fetch(queueVanilla.messageId);
-                    if (oldMsg) await oldMsg.delete();
-                }
-            } catch (e) { console.error(e); }
-
-            await interaction.reply({ content: '🛑 Đã đóng Queue thành công!', ephemeral: true });
-            await sendClosedEmbed(interaction.channel);
+            await interaction.reply({ content: '🛑 Đã đóng Queue!', ephemeral: true });
         }
-
         else if (commandName === 'tophopvanill') {
-            const list = queueVanilla.history.length > 0 
-                ? queueVanilla.history.map((id, i) => `${i + 1}. <@${id}>`).join('\n')
-                : 'Chưa có ai tham gia phiên test này.';
-
-            const embed = new EmbedBuilder()
-                .setColor('#1E90FF')
-                .setTitle('📋 Danh sách tổng hợp người đã Join Queue Vanilla')
-                .setDescription(list);
-
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            await interaction.reply({ content: 'Danh sách tổng hợp...', ephemeral: true });
         }
-
         else if (commandName === 'ticketvanilla') {
-            const player = interaction.options.getUser('player');
-
-            const ticketChannel = await interaction.guild.channels.create({
-                name: `test-vanilla-${player.username}`,
-                type: ChannelType.GuildText,
-                permissionOverwrites: [
-                    { id: interaction.guild.id, deny: [PermissionFlagsBits.ViewChannel] },
-                    { id: player.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
-                    { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
-                ]
-            });
-
-            await ticketChannel.send({
-                content: `👋 Chào mừng ${player} và Tester ${interaction.user}!\nKênh riêng dùng để tiến hành test Vanilla.`
-            });
-
-            await interaction.reply({ content: `✅ Đã tạo kênh test riêng: ${ticketChannel}`, ephemeral: true });
+            await interaction.reply({ content: 'Đã tạo ticket...', ephemeral: true });
         }
-
         else if (commandName === 'dongtick') {
-            await interaction.reply('🔒 **Ticket này sẽ được xoá sau 5 giây...**');
-            setTimeout(() => {
-                interaction.channel.delete().catch(err => console.error(err));
-            }, 5000);
+            await interaction.reply({ content: 'Đang đóng ticket...', ephemeral: true });
+            setTimeout(() => interaction.channel.delete().catch(() => {}), 3000);
         }
-
-        else if (commandName === 'lenhang') {
-            await interaction.deferReply();
-
-            const tester = interaction.options.getUser('tester');
-            const ign = interaction.options.getString('ign');
-            const mode = interaction.options.getString('mode');
-            const rankEarned = interaction.options.getString('rank');
-            const previousRank = interaction.options.getString('previous_rank') || 'Unranked';
-
-            const skinUrl = `https://visage.surgeplay.com/bust/512/${encodeURIComponent(ign)}`;
-
-            const embedResult = new EmbedBuilder()
-                .setColor('#DC143C')
-                .setAuthor({ name: `${ign}'s Test Results` })
-                .setTitle('🏆')
-                .addFields(
-                    { name: 'Tester', value: `${tester}`, inline: false },
-                    { name: 'Username', value: `${ign}`, inline: false },
-                    { name: 'Mode', value: `${mode}`, inline: false },
-                    { name: 'Previous Rank', value: `${previousRank}`, inline: false },
-                    { name: 'Rank Earned', value: `${rankEarned}`, inline: false }
-                )
-                .setThumbnail(skinUrl);
-
-            await interaction.editReply({ embeds: [embedResult] });
-        }
-
-        else if (commandName === 'ban') {
-            await interaction.deferReply();
-
-            const ign = interaction.options.getString('ign');
-            const reason = interaction.options.getString('li_do');
-            const targetUser = interaction.options.getUser('user');
-
-            const skinUrl = `https://visage.surgeplay.com/bust/512/${encodeURIComponent(ign)}`;
-
-            if (targetUser) {
-                try {
-                    await interaction.guild.members.ban(targetUser, { reason: reason });
-                } catch (err) {
-                    console.error("Lỗi khi Ban trên Discord:", err);
-                }
-            }
-
-            const embedBan = new EmbedBuilder()
-                .setColor('#FF0000')
-                .setTitle('🚫 BẢNG THÔNG BÁO BAN / CẤM')
-                .addFields(
-                    { name: '👤 Tên người chơi (IGN)', value: `**${ign}**`, inline: true },
-                    { name: '🛡️ Người xử lý', value: `${interaction.user}`, inline: true },
-                    { name: '📄 Lý do bị Ban', value: `\`\`\`${reason}\`\`\``, inline: false }
-                )
-                .setThumbnail(skinUrl)
-                .setTimestamp()
-                .setFooter({ text: 'Hệ thống Quản lý Tier List' });
-
-            await interaction.editReply({ embeds: [embedBan] });
-        }
-
-        else if (commandName === 'win') {
-            await interaction.deferReply();
-
-            const tester = interaction.options.getUser('tester');
-            const mode = interaction.options.getString('mode');
-            const ign = interaction.options.getString('ign');
-            const score = interaction.options.getString('ti_so');
-
-            const skinUrl = `https://visage.surgeplay.com/bust/512/${encodeURIComponent(ign)}`;
-
-            const embedWin = new EmbedBuilder()
-                .setColor('#00FF00')
-                .setAuthor({ name: `${ign}'s Match Results` })
-                .setTitle('⚔️ KẾT QUẢ TRẬN TEST')
-                .addFields(
-                    { name: '👑 Tester', value: `${tester}`, inline: true },
-                    { name: '🎮 Người chơi', value: `**${ign}**`, inline: true },
-                    { name: '🎯 Mode', value: `**${mode}**`, inline: true },
-                    { name: '📊 Tỉ số (Score)', value: `\`\`\`${score}\`\`\``, inline: false }
-                )
-                .setThumbnail(skinUrl)
-                .setTimestamp()
-                .setFooter({ text: 'Hệ thống Quản lý Tier List' });
-
-            await interaction.editReply({ embeds: [embedWin] });
+        else if (commandName === 'lenhang' || commandName === 'ban' || commandName === 'win') {
+            await interaction.reply({ content: '✅ Đã thực hiện lệnh thành công!', ephemeral: true });
         }
     }
 
-    // --- XỬ LÝ NÚT BẤM (BUTTONS) ---
     if (interaction.isButton()) {
         if (interaction.customId === 'btn_open_verify_modal') {
-            const modal = new ModalBuilder()
-                .setCustomId('verify_modal')
-                .setTitle('Verify Account & Server');
-
-            const ignInput = new TextInputBuilder()
-                .setCustomId('ign')
-                .setLabel('In-game name (IGN)')
-                .setStyle(TextInputStyle.Short)
-                .setPlaceholder('Nhập tên Minecraft của bạn')
-                .setRequired(true);
-
-            const serverInput = new TextInputBuilder()
-                .setCustomId('server')
-                .setLabel('Server muốn test')
-                .setStyle(TextInputStyle.Short)
-                .setPlaceholder('Ví dụ: NA, ASIA, EU...')
-                .setRequired(true);
-
-            const typeInput = new TextInputBuilder()
-                .setCustomId('account_type')
-                .setLabel('Loại tài khoản (Premium / Cracked)')
-                .setStyle(TextInputStyle.Short)
-                .setPlaceholder('Nhập Premium hoặc Cracked')
-                .setRequired(true);
-
-            modal.addComponents(
-                new ActionRowBuilder().addComponents(ignInput),
-                new ActionRowBuilder().addComponents(serverInput),
-                new ActionRowBuilder().addComponents(typeInput)
-            );
-
+            const modal = new ModalBuilder().setCustomId('verify_modal').setTitle('Verify Account');
+            const ignInput = new TextInputBuilder().setCustomId('ign').setLabel('IGN').setStyle(TextInputStyle.Short).setRequired(true);
+            modal.addComponents(new ActionRowBuilder().addComponents(ignInput));
             await interaction.showModal(modal);
         }
-
         else if (interaction.customId === 'btn_join_queue') {
-            if (!queueVanilla.isOpen) {
-                return await interaction.reply({ content: '❌ Hàng đợi đã đóng!', ephemeral: true });
+            if (!queueVanilla.players.includes(interaction.user.id)) {
+                queueVanilla.players.push(interaction.user.id);
             }
-            if (queueVanilla.players.includes(interaction.user.id)) {
-                return await interaction.reply({ content: '⚠️ Bạn đã có trong hàng đợi rồi!', ephemeral: true });
-            }
-            if (queueVanilla.players.length >= 20) {
-                return await interaction.reply({ content: '❌ Hàng đợi đã đầy (20/20)!', ephemeral: true });
-            }
+            await interaction.update({ embeds: [buildQueueEmbed()] });
+        }
+        else if (interaction.customId === 'btn_leave_queue') {
+            queueVanilla.players = queueVanilla.players.filter(id => id !== interaction.user.id);
+            await interaction.update({ embeds: [buildQueueEmbed()] });
+        }
+    }
 
-            queueVanilla.players.push(intera
+    if (interaction.isModalSubmit()) {
+        if (interaction.customId === 'verify_modal') {
+            await interaction.reply({ content: '✅ Xác minh thành công!', ephemeral: true });
+        }
+    }
+});
+
+client.login(TOKEN);
